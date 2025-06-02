@@ -4,129 +4,107 @@ import '../../utils/screen_size.dart';
 import 'fontsizes.dart';
 
 class AppTheme {
-  // Define light theme
   static final ThemeData lightTheme = ThemeData(
     fontFamily: 'Poppins',
-    // App Bar Theme
-    bottomAppBarTheme: BottomAppBarTheme(
-      color: Color(0xffFCFCFF),
+    colorScheme: ColorScheme.light(
+      primary: Color(0xFF4C6EF5),
+      secondary: Color(0xFFD97706),
+      background: Color(0xFFF8FAFC),
+      surface: Color(0xFFFFFFFF),
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: Color(0xFF1E293B),
+      onBackground: Color(0xFF1E293B),
     ),
+    scaffoldBackgroundColor: Color(0xFFF8FAFC),
     appBarTheme: AppBarTheme(
-      color: Color(0xff040F4F), // Customize app bar color
+      color: Color(0xFF4C6EF5),
       elevation: 0,
-      toolbarTextStyle: TextStyle(
-        fontSize: ScreenSize.fontSize(20),
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
       titleTextStyle: TextStyle(
         fontSize: ScreenSize.fontSize(20),
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
     ),
-    // Primary Color
-    primaryColor: Color(0xff040F4F),
-    secondaryHeaderColor: Color(0xffF9B406),
-    cardColor: Color(0xffa3aacf),
-    canvasColor: Color(0xffe3e7ff),
-    // Scaffolding Background Color
-    scaffoldBackgroundColor: Colors.white,
-    // Text Theme
+    cardColor: Color(0xFFFFFFFF),
+    canvasColor: Color(0xFFF8FAFC),
+    iconTheme: IconThemeData(color: Color(0xFF4C6EF5)),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: Color(0xFFD97706),
+    ),
     textTheme: TextTheme(
       bodyLarge: TextStyle(
         fontSize: baseFontSize,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF1E293B),
       ),
       bodyMedium: TextStyle(
         fontSize: ScreenSize.fontSize(14),
         fontWeight: FontWeight.normal,
-        color: Colors.black54,
+        color: Color(0xFF64748B),
       ),
       bodySmall: TextStyle(
         fontSize: ScreenSize.fontSize(12),
         fontWeight: FontWeight.normal,
-        color: Colors.black54,
+        color: Color(0xFF94A3B8),
       ),
       titleLarge: TextStyle(
         fontSize: ScreenSize.fontSize(22),
-        fontWeight: FontWeight.w600,
-        color: Color(0xff040F4F),
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF4C6EF5),
       ),
       titleMedium: TextStyle(
         fontSize: ScreenSize.fontSize(14),
         fontWeight: FontWeight.w600,
-        color: Color(0xff040F4F),
+        color: Color(0xFF1E293B),
       ),
-    ),
-    // Button Theme
-    buttonTheme: ButtonThemeData(
-      buttonColor: Colors.blue,
-      textTheme: ButtonTextTheme.primary,
-    ),
-    // Icon Theme
-    iconTheme: IconThemeData(
-      color: Colors.blue,
-    ),
-    // Floating Action Button Theme
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: Colors.blue,
     ),
   );
 
-  // Define dark theme
   static final ThemeData darkTheme = ThemeData(
     fontFamily: 'Poppins',
-    // App Bar Theme
+    colorScheme: ColorScheme.dark(
+      primary: Color(0xFFA5B4FC),
+      secondary: Color(0xFFFACC15),
+      background: Color(0xFF0F172A),
+      surface: Color(0xFF1E293B),
+      onPrimary: Color(0xFF0F172A),
+      onSecondary: Color(0xFF0F172A),
+      onSurface: Color(0xFFF1F5F9),
+      onBackground: Color(0xFFF1F5F9),
+    ),
+    scaffoldBackgroundColor: Color(0xFF0F172A),
     appBarTheme: AppBarTheme(
-      color: Colors.black, // Customize app bar color
+      color: Color(0xFF1E293B),
       elevation: 0,
-      toolbarTextStyle: TextStyle(
-        fontSize: ScreenSize.fontSize(20),
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
       titleTextStyle: TextStyle(
         fontSize: ScreenSize.fontSize(20),
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
     ),
-    // Primary Color
-    primaryColor: Colors.blueGrey,
-    // Scaffolding Background Color
-    scaffoldBackgroundColor: Colors.black,
-    // Text Theme
+    cardColor: Color(0xFF1E293B),
+    canvasColor: Color(0xFF0F172A),
+    iconTheme: IconThemeData(color: Color(0xFFA5B4FC)),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: Color(0xFFFACC15),
+    ),
     textTheme: TextTheme(
       bodyLarge: TextStyle(
         fontSize: ScreenSize.fontSize(16),
         fontWeight: FontWeight.normal,
-        color: Colors.white,
+        color: Color(0xFFF1F5F9),
       ),
       bodyMedium: TextStyle(
         fontSize: ScreenSize.fontSize(14),
         fontWeight: FontWeight.normal,
-        color: Colors.white70,
+        color: Color(0xFFCBD5E1),
       ),
       titleLarge: TextStyle(
         fontSize: ScreenSize.fontSize(22),
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
-    ),
-    // Button Theme
-    buttonTheme: ButtonThemeData(
-      buttonColor: Colors.blueGrey,
-      textTheme: ButtonTextTheme.primary,
-    ),
-    // Icon Theme
-    iconTheme: IconThemeData(
-      color: Colors.white,
-    ),
-    // Floating Action Button Theme
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: Colors.blueGrey,
     ),
   );
 }

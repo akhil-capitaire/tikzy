@@ -27,9 +27,9 @@ class CustomButton extends ConsumerWidget {
   Color backgroundColorFor(ButtonType type) {
     switch (type) {
       case ButtonType.primary:
-        return AppTheme.lightTheme.primaryColor;
+        return AppTheme.lightTheme.colorScheme.primary;
       case ButtonType.secondary:
-        return AppTheme.lightTheme.secondaryHeaderColor;
+        return AppTheme.lightTheme.colorScheme.secondary;
       case ButtonType.grey:
         return Colors.grey[300]!;
       case ButtonType.outlined:
@@ -44,11 +44,11 @@ class CustomButton extends ConsumerWidget {
       case ButtonType.primary:
         return Colors.white;
       case ButtonType.secondary:
-        return Colors.black;
+        return Colors.white;
       case ButtonType.grey:
         return Colors.black;
       case ButtonType.outlined:
-        return AppTheme.lightTheme.primaryColor;
+        return AppTheme.lightTheme.colorScheme.primary;
       case ButtonType.cardButton:
         return Colors.black;
     }
@@ -57,13 +57,13 @@ class CustomButton extends ConsumerWidget {
   Color borderColorFor(ButtonType type) {
     switch (type) {
       case ButtonType.primary:
-        return AppTheme.lightTheme.primaryColor;
+        return AppTheme.lightTheme.colorScheme.primary;
       case ButtonType.secondary:
-        return AppTheme.lightTheme.secondaryHeaderColor;
+        return AppTheme.lightTheme.colorScheme.secondary;
       case ButtonType.grey:
         return Colors.grey[300]!;
       case ButtonType.outlined:
-        return AppTheme.lightTheme.primaryColor;
+        return AppTheme.lightTheme.colorScheme.primary;
       case ButtonType.cardButton:
         return const Color(0xffF8F9A6);
     }
@@ -101,15 +101,15 @@ class CustomButton extends ConsumerWidget {
         onPressed: loading
             ? null
             : () async {
-                ref.read(buttonLoadingProvider.notifier).update(
-                      (state) => {...state, type: true},
-                    );
+                ref
+                    .read(buttonLoadingProvider.notifier)
+                    .update((state) => {...state, type: true});
                 try {
                   await onPressed();
                 } finally {
-                  ref.read(buttonLoadingProvider.notifier).update(
-                        (state) => {...state, type: false},
-                      );
+                  ref
+                      .read(buttonLoadingProvider.notifier)
+                      .update((state) => {...state, type: false});
                 }
               },
         child: loading

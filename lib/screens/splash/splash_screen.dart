@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,7 +45,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               Text(
                 "tikzy",
                 style: TextStyle(
-                    fontSize: baseFontSize, fontWeight: FontWeight.bold),
+                  fontSize: baseFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -55,7 +58,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   gotoNext() {
     Future.delayed(Duration(seconds: 2), () async {
-      Navigator.pushReplacementNamed(context, Routes.signin);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // User is signed in, navigate to dashboard
+        Navigator.pushReplacementNamed(context, Routes.dashboard);
+      } else {
+        // User is not signed in, navigate to sign-in page
+        Navigator.pushReplacementNamed(context, Routes.signin);
+      }
     });
   }
 }

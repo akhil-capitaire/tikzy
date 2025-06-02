@@ -36,6 +36,15 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: any
   intl: any
+  firebase_core: any
+  firebase_auth: any
+  cloud_firestore: any
+  file_picker: any
+  image: any
+  mime: any
+  http: any
+  cloudinary: ^1.2.0
+  toastification: ^3.0.1
 
 dev_dependencies:
   flutter_test:

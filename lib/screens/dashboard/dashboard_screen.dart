@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/screens/dashboard/section_header.dart';
 import 'package:tikzy/screens/dashboard/ticket_summarycard.dart';
-import 'package:tikzy/screens/tickets/ticket_row.dart';
+import 'package:tikzy/services/auth_services.dart';
 import 'package:tikzy/widgets/buttons.dart';
 
+import '../../providers/ticket_provider.dart';
 import '../../utils/fontsizes.dart';
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
 import '../../utils/spaces.dart';
+import '../tickets/ticket_row.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
+  @override
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
@@ -22,33 +30,122 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SectionHeader(title: 'Dashboard'),
-                  Row(
-                    children: [
-                      CustomButton(
-                        label: 'Ticket List',
-                        onPressed: () async {
-                          Navigator.pushNamed(context, Routes.ticketlistpage);
-                        },
-                        isSmall: true,
-                        type: ButtonType.outlined,
-                      ),
-                      sb(2, 0),
-                      CustomButton(
-                        label: 'Add Ticket',
-                        onPressed: () async {
-                          Navigator.pushNamed(context, Routes.createticket);
-                        },
-                        isSmall: true,
-                        type: ButtonType.primary,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              isMobile
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SectionHeader(title: 'Dashboard'),
+                        sb(0, 2),
+                        Wrap(
+                          spacing: ScreenSize.width(2),
+                          runSpacing: ScreenSize.height(1),
+                          children: [
+                            CustomButton(
+                              label: 'Logout',
+                              onPressed: () async {
+                                await AuthService().signOut();
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  Routes.signin,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.primary,
+                            ),
+                            CustomButton(
+                              label: 'Ticket List',
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.ticketlistpage,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.outlined,
+                            ),
+                            CustomButton(
+                              label: 'Add User',
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.adduserpage,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.secondary,
+                            ),
+                            CustomButton(
+                              label: 'Add Ticket',
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.createticket,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.primary,
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SectionHeader(title: 'Dashboard'),
+                        Wrap(
+                          spacing: ScreenSize.width(2),
+                          children: [
+                            CustomButton(
+                              label: 'Logout',
+                              onPressed: () async {
+                                await AuthService().signOut();
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  Routes.signin,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.primary,
+                            ),
+                            CustomButton(
+                              label: 'Ticket List',
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.ticketlistpage,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.outlined,
+                            ),
+                            CustomButton(
+                              label: 'Add User',
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.adduserpage,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.secondary,
+                            ),
+                            CustomButton(
+                              label: 'Add Ticket',
+                              onPressed: () async {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routes.createticket,
+                                );
+                              },
+                              isSmall: true,
+                              type: ButtonType.primary,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
               sb(0, 3),
               buildSummaryCards(),
               sb(0, 4),
@@ -143,6 +240,15 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
           ),
+          Expanded(
+            child: Text(
+              'Priority',
+              style: TextStyle(
+                fontSize: baseFontSize + 2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -152,22 +258,30 @@ class DashboardScreen extends StatelessWidget {
     final items = [
       TicketSummaryCard(
         label: 'Pending Tickets',
-        count: 12,
+        count: ref
+            .read(ticketNotifierProvider.notifier)
+            .getTicketCountByStatus('open'),
         color: Colors.orange,
       ),
       TicketSummaryCard(
         label: 'Closed Tickets',
-        count: 45,
+        count: ref
+            .read(ticketNotifierProvider.notifier)
+            .getTicketCountByStatus('closed'),
         color: Colors.green,
       ),
       TicketSummaryCard(
         label: 'Important Tickets',
-        count: 7,
+        count: ref
+            .read(ticketNotifierProvider.notifier)
+            .getImportanrTicketCount(),
         color: Colors.red,
       ),
       TicketSummaryCard(
         label: 'In Progress Tickets',
-        count: 22,
+        count: ref
+            .read(ticketNotifierProvider.notifier)
+            .getTicketCountByStatus('in progress'),
         color: Colors.blue,
       ),
     ];
@@ -194,24 +308,14 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget buildTicketList() {
-    final tickets = List.generate(
-      10,
-      (index) => TicketRow(
-        projectName: 'Project Alpha',
-        title: 'Fix login bug',
-        createdDate: DateTime(2024, 12, 1),
-        dueDate: DateTime(2024, 12, 5),
-        closedDate: index % 2 == 0 ? DateTime(2024, 12, 4) : null,
-        assignee: 'John Doe',
-        assignedBy: 'Jane Smith',
-        status: index % 2 == 0 ? 'Closed' : 'Pending',
-      ),
-    );
+    final tickets = ref.watch(ticketNotifierProvider).value;
 
     return ListView.separated(
-      itemCount: tickets.length,
+      itemCount: tickets?.length ?? 0,
       separatorBuilder: (_, __) => sb(0, 2),
-      itemBuilder: (_, index) => tickets[index],
+      itemBuilder: (_, index) {
+        return TicketRow(ticket: tickets![index]);
+      },
     );
   }
 }

@@ -35,7 +35,7 @@ class TicketSummaryCard extends StatelessWidget {
         vertical: ScreenSize.height(2),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             label.toUpperCase(),

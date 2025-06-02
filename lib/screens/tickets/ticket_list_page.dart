@@ -1,47 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tikzy/providers/ticket_provider.dart';
 import 'package:tikzy/utils/fontsizes.dart';
 
 import '../../models/ticket_model.dart';
+import '../../utils/screen_size.dart';
 import 'ticket_row.dart'; // Your existing TicketRow widget
 
-class TicketsListPage extends StatefulWidget {
+class TicketsListPage extends ConsumerStatefulWidget {
   const TicketsListPage({super.key});
 
   @override
-  State<TicketsListPage> createState() => _TicketsListPageState();
+  ConsumerState<TicketsListPage> createState() => _TicketsListPageState();
 }
 
-class _TicketsListPageState extends State<TicketsListPage> {
-  final List<Ticket> allTickets = List.generate(10, (i) {
-    return Ticket(
-      id: 'TCKT-$i',
-      title: 'Crash on submit [$i]',
-      projectName: 'CRM Module',
-      createdDate: DateTime(2024, 5, i + 1),
-      dueDate: i % 2 == 0 ? DateTime(2024, 5, i + 5) : null,
-      closedDate: i % 3 == 0 ? DateTime(2024, 5, i + 6) : null,
-      assignee: 'User ${i % 4 + 1}',
-      assignedBy: 'Manager ${i % 2 + 1}',
-      status: ['Open', 'In Progress', 'Closed', 'Blocked'][i % 4],
-    );
-  });
+class _TicketsListPageState extends ConsumerState<TicketsListPage> {
+  List<Ticket> allTickets = [];
 
   String? selectedProject;
   String? selectedStatus;
   String? selectedAssignee;
+  String? selectedPriority;
 
   List<Ticket> get filteredTickets => allTickets.where((ticket) {
-    return (selectedProject == null || ticket.projectName == selectedProject) &&
-        (selectedStatus == null || ticket.status == selectedStatus) &&
-        (selectedAssignee == null || ticket.assignee == selectedAssignee);
+    return (selectedProject == null ||
+            selectedProject == 'All' ||
+            ticket.projectName == selectedProject) &&
+        (selectedStatus == null ||
+            selectedStatus == 'All' ||
+            ticket.status == selectedStatus) &&
+        (selectedAssignee == null ||
+            selectedAssignee == 'All' ||
+            ticket.assignee == selectedAssignee) &&
+        (selectedPriority == null ||
+            selectedPriority == 'All' ||
+            ticket.priority == selectedPriority);
   }).toList();
 
-  List<String> get allProjects =>
-      allTickets.map((t) => t.projectName).toSet().toList();
-  List<String> get allStatuses =>
-      allTickets.map((t) => t.status).toSet().toList();
-  List<String> get allAssignees =>
-      allTickets.map((t) => t.assignee).toSet().toList();
+  List<String> get allProjects => [
+    'All',
+    ...{...allTickets.map((t) => t.projectName)},
+  ];
+  List<String> get allStatuses => [
+    'All',
+    ...{...allTickets.map((t) => t.status)},
+  ];
+  List<String> get allAssignees => [
+    'All',
+    ...{...allTickets.map((t) => t.assignee)},
+  ];
+  List<String> get allPriority => [
+    'All',
+    ...{...allTickets.map((t) => t.priority)},
+  ];
 
   void clearFilters() {
     setState(() {
@@ -52,22 +63,27 @@ class _TicketsListPageState extends State<TicketsListPage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
-
+    final tickets = ref.watch(ticketNotifierProvider).value;
+    allTickets = tickets ?? [];
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tickets', style: TextStyle(fontSize: baseFontSize + 4)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.clear_all),
-            tooltip: 'Clear Filters',
-            onPressed: clearFilters,
-          ),
-        ],
-      ),
+      appBar: isMobile
+          ? AppBar(
+              title: Text(
+                'Tickets',
+                style: TextStyle(fontSize: baseFontSize + 4),
+              ),
+            )
+          : null,
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(ScreenSize.width(4)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -80,16 +96,7 @@ class _TicketsListPageState extends State<TicketsListPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (_, index) {
                   final ticket = filteredTickets[index];
-                  return TicketRow(
-                    projectName: ticket.projectName,
-                    title: ticket.title,
-                    createdDate: ticket.createdDate,
-                    dueDate: ticket.dueDate,
-                    closedDate: ticket.closedDate,
-                    assignee: ticket.assignee,
-                    assignedBy: ticket.assignedBy,
-                    status: ticket.status,
-                  );
+                  return TicketRow(ticket: ticket);
                 },
               ),
             ),
@@ -125,6 +132,13 @@ class _TicketsListPageState extends State<TicketsListPage> {
           options: allAssignees,
           placeholder: 'Select assignee',
           onSelected: (val) => setState(() => selectedAssignee = val),
+        ),
+        buildDropdownFilter(
+          label: 'Priority',
+          value: selectedPriority,
+          options: allPriority,
+          placeholder: 'Select Priority',
+          onSelected: (val) => setState(() => selectedPriority = val),
         ),
       ],
     );

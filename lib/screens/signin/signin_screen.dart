@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tikzy/services/auth_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/widgets/snackbar.dart';
 
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
@@ -28,7 +30,6 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
     final theme = Theme.of(context);
 
     return CustomScaffold(
-      backNeeded: false,
       body: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(commonRadiusSize),
@@ -196,10 +197,42 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
                 width: double.infinity,
                 height: 48,
                 child: CustomButton(
-                  label: forgotPassword ? 'Send OTP' : 'Login',
+                  label: forgotPassword ? 'Send Reset Mail' : 'Login',
                   onPressed: () async {
-                    if (formKey.currentState?.validate() ?? false) {
-                      Navigator.pushReplacementNamed(context, Routes.dashboard);
+                    if (forgotPassword) {
+                      if (formKey.currentState?.validate() ?? false) {
+                        await ref
+                            .read(buttonLoadingProvider.notifier)
+                            .update(
+                              (state) => {...state, ButtonType.outlined: true},
+                            );
+                        await AuthService().sendPasswordResetEmail(
+                          emailController.text,
+                        );
+                        SnackbarHelper.showSnackbar(
+                          "Reset email sent successfully",
+                        );
+                        setState(() => forgotPassword = !forgotPassword);
+
+                        // Navigator.pushReplacementNamed(context, Routes.dashboard);
+                      }
+                    } else {
+                      if (formKey.currentState?.validate() ?? false) {
+                        await ref
+                            .read(buttonLoadingProvider.notifier)
+                            .update(
+                              (state) => {...state, ButtonType.primary: true},
+                            );
+                        await AuthService().signIn(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+
+                        Navigator.pushReplacementNamed(
+                          context,
+                          Routes.dashboard,
+                        );
+                      }
                     }
                   },
                   isSmall: false,

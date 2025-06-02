@@ -1,65 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:tikzy/providers/ticket_provider.dart';
+import 'package:tikzy/services/ticket_services.dart';
 import 'package:tikzy/widgets/dropdown.dart';
 
-class TicketDetailPage extends StatefulWidget {
-  final String ticketId;
-  final String title;
-  final String description;
-  final String projectName;
-  final String assignee;
-  final String assignedBy;
-  final DateTime createdDate;
-  final DateTime? closedDate;
-  final DateTime dueDate;
-  final String status;
+import '../../models/ticket_model.dart';
+import '../../utils/status_colors.dart';
+import '../../widgets/thumbnail_view.dart';
 
-  const TicketDetailPage({
-    super.key,
-    required this.ticketId,
-    required this.title,
-    required this.description,
-    required this.projectName,
-    required this.assignee,
-    required this.assignedBy,
-    required this.createdDate,
-    this.closedDate,
-    required this.dueDate,
-    required this.status,
-  });
+class TicketDetailPage extends ConsumerStatefulWidget {
+  final Ticket ticket;
+
+  const TicketDetailPage({super.key, required this.ticket});
 
   @override
-  State<TicketDetailPage> createState() => _TicketDetailPageState();
+  ConsumerState<TicketDetailPage> createState() => _TicketDetailPageState();
 }
 
-class _TicketDetailPageState extends State<TicketDetailPage> {
+class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   late String selectedStatus;
+  late String selectedPriority;
   late DateTime selectedDueDate;
+  late List<String> updatedAttachments;
+
+  bool isModified = false;
 
   final statusOptions = ['Open', 'In Progress', 'Closed', 'On Hold'];
+  final priorityOptions = ['Low', 'Medium', 'High'];
   final baseFontSize = 14.0;
   final dateFormat = DateFormat('MMM d, y');
 
   @override
   void initState() {
     super.initState();
-    selectedStatus = widget.status;
-    selectedDueDate = widget.dueDate;
+    selectedStatus = widget.ticket.status;
+    selectedPriority = widget.ticket.priority;
+    selectedDueDate = widget.ticket.dueDate!;
+    updatedAttachments = List<String>.from(widget.ticket.attachments);
   }
 
-  Color getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'open':
-        return Colors.green.shade600;
-      case 'in progress':
-        return Colors.orange.shade600;
-      case 'closed':
-        return Colors.grey.shade600;
-      case 'on hold':
-        return Colors.blue.shade600;
-      default:
-        return Colors.black45;
-    }
+  void markModified() {
+    setState(() => isModified = true);
   }
 
   Future<void> pickDueDate() async {
@@ -69,9 +51,30 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null) {
-      setState(() => selectedDueDate = picked);
+    if (picked != null && picked != selectedDueDate) {
+      setState(() {
+        selectedDueDate = picked;
+        markModified();
+      });
     }
+  }
+
+  Future<void> updateTicketChanges() async {
+    await TicketService().updateTicket(
+      ticketId: widget.ticket.id,
+      dueDate: selectedDueDate,
+      status: selectedStatus,
+      priority: selectedPriority,
+    );
+    ref.read(ticketNotifierProvider.notifier).loadTickets();
+    setState(() => isModified = false);
+  }
+
+  void removeAttachment(String url) {
+    setState(() {
+      updatedAttachments.remove(url);
+      markModified();
+    });
   }
 
   @override
@@ -80,16 +83,18 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
     final isMobile = screenWidth < 600;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Ticket #${widget.ticketId}',
-          style: TextStyle(
-            fontSize: baseFontSize + 2,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        elevation: 1,
-      ),
+      appBar: isMobile
+          ? AppBar(
+              title: Text(
+                'Ticket #${widget.ticket.id}',
+                style: TextStyle(
+                  fontSize: baseFontSize + 2,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              elevation: 1,
+            )
+          : null,
       backgroundColor: Colors.grey.shade100,
       body: Center(
         child: ConstrainedBox(
@@ -104,50 +109,77 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title + Status
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.title,
-                            style: TextStyle(
-                              fontSize: baseFontSize + 4,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade900,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.ticket.title,
+                              style: TextStyle(
+                                fontSize: baseFontSize + 4,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade900,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
 
-                    // Responsive layout: Meta + Description side by side or stacked
-                    isMobile
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              buildMetaCard(),
-                              const SizedBox(height: 24),
-                              buildDescriptionCard(),
-                            ],
-                          )
-                        : Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 4, child: buildMetaCard()),
-                              const SizedBox(width: 32),
-                              Expanded(flex: 6, child: buildDescriptionCard()),
-                            ],
-                          ),
-                  ],
+                      // Meta and Description
+                      isMobile
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                buildMetaCard(),
+                                const SizedBox(height: 24),
+                                buildDescriptionCard(),
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 4, child: buildMetaCard()),
+                                const SizedBox(width: 32),
+                                Expanded(
+                                  flex: 6,
+                                  child: buildDescriptionCard(),
+                                ),
+                              ],
+                            ),
+
+                      const SizedBox(height: 32),
+                      if (isModified) buildUpdateButton(),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildUpdateButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ElevatedButton.icon(
+        onPressed: updateTicketChanges,
+        icon: const Icon(Icons.update, color: Colors.white),
+        label: Text(
+          'Update Ticket',
+          style: TextStyle(fontSize: baseFontSize, color: Colors.white),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blueAccent,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );
@@ -160,42 +192,74 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
       color: Colors.grey.shade50,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            metaField('Project', widget.projectName),
-            metaField('Assignee', widget.assignee),
-            metaField('Assigned By', widget.assignedBy),
-            dateField('Created', widget.createdDate),
-            dateField('Due', selectedDueDate, editable: true),
-            if (widget.closedDate != null)
-              dateField('Closed', widget.closedDate!),
+            // LEFT: Static Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  metaField('Project', widget.ticket.projectName),
+                  metaField('Assignee', widget.ticket.assignee),
+                  metaField('Assigned By', widget.ticket.assignedBy),
+                  dateField('Created', widget.ticket.createdDate),
+                  if (widget.ticket.closedDate != null)
+                    dateField('Closed', widget.ticket.closedDate!),
+                  const SizedBox(height: 16),
+                  dateField('Current Due', widget.ticket.dueDate),
+                  metaField('Current Status', widget.ticket.status),
+                  metaField('Current Priority', widget.ticket.priority),
+                ],
+              ),
+            ),
 
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Status",
-                  style: TextStyle(
+            const SizedBox(width: 16),
+
+            // RIGHT: Editable Fields
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  dateField('Change Due', selectedDueDate, editable: true),
+                  const SizedBox(height: 8),
+                  Text("Change Status", style: fieldLabelStyle()),
+                  const SizedBox(height: 6),
+                  CustomDropdown(
+                    width: 200,
+                    options: statusOptions,
+                    value: selectedStatus,
+                    fillColor: getStatusColor(selectedStatus),
                     fontSize: baseFontSize,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    onChanged: (value) {
+                      if (value != null && value != selectedStatus) {
+                        setState(() {
+                          selectedStatus = value;
+                          markModified();
+                        });
+                      }
+                    },
                   ),
-                ),
-                const SizedBox(height: 6),
-                CustomDropdown(
-                  width: 200,
-                  options: statusOptions,
-                  value: selectedStatus,
-                  fillColor: getStatusColor(selectedStatus),
-                  fontSize: baseFontSize,
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => selectedStatus = value);
-                    }
-                  },
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text("Change Priority", style: fieldLabelStyle()),
+                  const SizedBox(height: 6),
+                  CustomDropdown(
+                    width: 200,
+                    options: priorityOptions,
+                    value: selectedPriority,
+                    fillColor: getPriorityColor(selectedPriority),
+                    fontSize: baseFontSize,
+                    onChanged: (value) {
+                      if (value != null && value != selectedPriority) {
+                        setState(() {
+                          selectedPriority = value;
+                          markModified();
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -213,23 +277,35 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Description',
-              style: TextStyle(
-                fontSize: baseFontSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
-              ),
-            ),
+            Text('Description', style: fieldLabelStyle()),
             const SizedBox(height: 12),
             Text(
-              widget.description,
+              widget.ticket.description,
               style: TextStyle(
                 fontSize: baseFontSize + 1,
                 color: Colors.grey.shade900,
                 height: 1.4,
               ),
             ),
+            if (updatedAttachments.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Text('Attachments', style: fieldLabelStyle()),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: updatedAttachments.map((url) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+
+                    child: ImageThumbnail(
+                      imageUrl: url,
+                      tag: 'sample-image-tag',
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ],
         ),
       ),
@@ -242,14 +318,7 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: baseFontSize,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
-          ),
+          Text(label, style: fieldLabelStyle()),
           const SizedBox(height: 6),
           Text(
             value,
@@ -273,14 +342,7 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: baseFontSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
-              ),
-            ),
+            Text(label, style: fieldLabelStyle()),
             const SizedBox(height: 6),
             Row(
               children: [
@@ -305,6 +367,14 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
           ],
         ),
       ),
+    );
+  }
+
+  TextStyle fieldLabelStyle() {
+    return TextStyle(
+      fontSize: baseFontSize,
+      fontWeight: FontWeight.w600,
+      color: Colors.grey.shade600,
     );
   }
 }

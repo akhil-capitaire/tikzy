@@ -1,30 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/ticket_model.dart';
+import '../../utils/routes.dart';
 import '../../utils/status_colors.dart';
-import 'ticketDetailsScreen.dart';
 
 class TicketRow extends StatefulWidget {
-  final String projectName;
-  final String title;
-  final DateTime createdDate;
-  final DateTime? dueDate;
-  final DateTime? closedDate;
-  final String assignee;
-  final String assignedBy;
-  final String status;
+  final Ticket ticket;
 
-  const TicketRow({
-    super.key,
-    required this.projectName,
-    required this.title,
-    required this.createdDate,
-    this.dueDate,
-    this.closedDate,
-    required this.assignee,
-    required this.assignedBy,
-    required this.status,
-  });
+  const TicketRow({super.key, required this.ticket});
 
   @override
   State<TicketRow> createState() => _TicketRowState();
@@ -44,23 +28,10 @@ class _TicketRowState extends State<TicketRow> {
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: () {
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => TicketDetailPage(
-                ticketId: '123',
-                title: 'Crash on login',
-                projectName: 'CRM App',
-                description:
-                    'User reports a crash when tapping login on iOS 17.',
-                createdDate: DateTime(2024, 5, 1),
-                dueDate: DateTime(2024, 5, 10),
-                closedDate: null,
-                assignee: 'Akhil',
-                assignedBy: 'John',
-                status: 'In Progress',
-              ),
-            ),
+            Routes.ticketdetailpage,
+            arguments: {'ticket': widget.ticket},
           );
         },
         child: Container(
@@ -71,23 +42,48 @@ class _TicketRowState extends State<TicketRow> {
           ),
           child: Row(
             children: [
-              cell(widget.title, flex: 2),
-              cell(widget.projectName, flex: 2),
-              cell(dateFormat.format(widget.createdDate)),
+              cell(widget.ticket.title, flex: 2),
+              cell(widget.ticket.projectName, flex: 2),
+              cell(dateFormat.format(widget.ticket.createdDate as DateTime)),
               cell(
-                widget.dueDate != null
-                    ? dateFormat.format(widget.dueDate!)
+                widget.ticket.dueDate != null
+                    ? dateFormat.format(widget.ticket.dueDate!)
                     : '-',
               ),
               cell(
-                widget.closedDate != null
-                    ? dateFormat.format(widget.closedDate!)
+                widget.ticket.closedDate != null
+                    ? dateFormat.format(widget.ticket.closedDate!)
                     : '-',
               ),
-              cell(widget.assignee),
-              cell(widget.assignedBy),
-              statusPill(widget.status),
+              cell(widget.ticket.assignee),
+              cell(widget.ticket.assignedBy),
+              statusPill(widget.ticket.status),
+              priorityPill(widget.ticket.priority),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget priorityPill(String priority) {
+    final color = getPriorityColor(priority);
+    return Expanded(
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            priority,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ),
       ),
@@ -120,26 +116,15 @@ class _TicketRowState extends State<TicketRow> {
 
   Widget mobileLayout(BuildContext context) {
     final dateFormat = DateFormat('dd MMM yyyy');
-    final statusColor = getStatusColor(widget.status);
+    final statusColor = getStatusColor(widget.ticket.status);
+    final priorityColor = getPriorityColor(widget.ticket.status);
 
     return InkWell(
       onTap: () {
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (_) => TicketDetailPage(
-              ticketId: '123',
-              title: 'Crash on login',
-              projectName: 'CRM App',
-              description: 'User reports a crash when tapping login on iOS 17.',
-              createdDate: DateTime(2024, 5, 1),
-              dueDate: DateTime(2024, 5, 10),
-              closedDate: null,
-              assignee: 'Akhil',
-              assignedBy: 'John',
-              status: 'In Progress',
-            ),
-          ),
+          Routes.ticketdetailpage,
+          arguments: {'ticket': widget.ticket},
         );
       },
       child: Container(
@@ -159,7 +144,7 @@ class _TicketRowState extends State<TicketRow> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.title,
+                    widget.ticket.title,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -177,7 +162,7 @@ class _TicketRowState extends State<TicketRow> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    widget.status,
+                    widget.ticket.status,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -185,6 +170,7 @@ class _TicketRowState extends State<TicketRow> {
                     ),
                   ),
                 ),
+                priorityPill(widget.ticket.priority),
               ],
             ),
 
@@ -197,7 +183,7 @@ class _TicketRowState extends State<TicketRow> {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    widget.projectName,
+                    widget.ticket.projectName,
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
@@ -205,7 +191,7 @@ class _TicketRowState extends State<TicketRow> {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    widget.assignee,
+                    widget.ticket.assignee,
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
@@ -220,29 +206,29 @@ class _TicketRowState extends State<TicketRow> {
                 const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
-                  dateFormat.format(widget.createdDate),
+                  dateFormat.format(widget.ticket.createdDate as DateTime),
                   style: const TextStyle(fontSize: 13),
                 ),
-                if (widget.dueDate != null) ...[
+                if (widget.ticket.dueDate != null) ...[
                   const SizedBox(width: 12),
                   const Icon(Icons.schedule, size: 16, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    dateFormat.format(widget.dueDate!),
+                    dateFormat.format(widget.ticket.dueDate!),
                     style: const TextStyle(fontSize: 13),
                   ),
                 ],
               ],
             ),
 
-            if (widget.closedDate != null) ...[
+            if (widget.ticket.closedDate != null) ...[
               const SizedBox(height: 4),
               Row(
                 children: [
                   const Icon(Icons.check_circle, size: 16, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    "Closed: ${dateFormat.format(widget.closedDate!)}",
+                    "Closed: ${dateFormat.format(widget.ticket.closedDate!)}",
                     style: const TextStyle(fontSize: 13),
                   ),
                 ],
@@ -253,7 +239,7 @@ class _TicketRowState extends State<TicketRow> {
 
             /// Assigned By
             Text(
-              "Assigned by ${widget.assignedBy}",
+              "Assigned by ${widget.ticket.assignedBy}",
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],

@@ -14,3 +14,18 @@ Color getStatusColor(String status) {
       return Colors.grey;
   }
 }
+
+Color getPriorityColor(String priority) {
+  switch (priority.toLowerCase()) {
+    case 'low':
+      return Colors.green;
+    case 'medium':
+      return Colors.orange;
+    case 'high':
+      return Colors.red;
+    case 'critical':
+      return Colors.purple;
+    default:
+      return Colors.grey;
+  }
+}

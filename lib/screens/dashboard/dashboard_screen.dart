@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tikzy/providers/project_provider.dart';
+import 'package:tikzy/providers/user_list_provider.dart';
+import 'package:tikzy/providers/user_provider.dart';
 import 'package:tikzy/screens/dashboard/section_header.dart';
 import 'package:tikzy/screens/dashboard/ticket_summarycard.dart';
 import 'package:tikzy/services/auth_services.dart';
-import 'package:tikzy/widgets/buttons.dart';
 
 import '../../providers/ticket_provider.dart';
 import '../../utils/fontsizes.dart';
@@ -20,132 +22,63 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(userLocalProvider.notifier).loadUserFromPrefs();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userLocalProvider);
+    final role = user?.role ?? 'user';
+    final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: ScreenSize.height(5)),
+            sb(2, 0),
+            Text(
+              "Tikzy",
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: theme.colorScheme.primary,
+                fontSize: baseFontSize + 10,
+                letterSpacing: 2,
+                shadows: [
+                  Shadow(
+                    color: theme.colorScheme.primary.withOpacity(0.25),
+                    offset: const Offset(0, 2),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+        ],
+      ),
+      endDrawer: DashboardSidePanel(role: role, ref: ref),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(ScreenSize.width(4)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              isMobile
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SectionHeader(title: 'Dashboard'),
-                        sb(0, 2),
-                        Wrap(
-                          spacing: ScreenSize.width(2),
-                          runSpacing: ScreenSize.height(1),
-                          children: [
-                            CustomButton(
-                              label: 'Logout',
-                              onPressed: () async {
-                                await AuthService().signOut();
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  Routes.signin,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.primary,
-                            ),
-                            CustomButton(
-                              label: 'Ticket List',
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.ticketlistpage,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.outlined,
-                            ),
-                            CustomButton(
-                              label: 'Add User',
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.adduserpage,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.secondary,
-                            ),
-                            CustomButton(
-                              label: 'Add Ticket',
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.createticket,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.primary,
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SectionHeader(title: 'Dashboard'),
-                        Wrap(
-                          spacing: ScreenSize.width(2),
-                          children: [
-                            CustomButton(
-                              label: 'Logout',
-                              onPressed: () async {
-                                await AuthService().signOut();
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  Routes.signin,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.primary,
-                            ),
-                            CustomButton(
-                              label: 'Ticket List',
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.ticketlistpage,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.outlined,
-                            ),
-                            CustomButton(
-                              label: 'Add User',
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.adduserpage,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.secondary,
-                            ),
-                            CustomButton(
-                              label: 'Add Ticket',
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.createticket,
-                                );
-                              },
-                              isSmall: true,
-                              type: ButtonType.primary,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+              sb(0, 2),
+              const SectionHeader(title: 'Dashboard'),
               sb(0, 3),
               buildSummaryCards(),
               sb(0, 4),
@@ -316,6 +249,142 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       itemBuilder: (_, index) {
         return TicketRow(ticket: tickets![index]);
       },
+    );
+  }
+}
+
+// e.g., baseFontSize, sb()
+
+class DashboardSidePanel extends StatelessWidget {
+  final String role;
+  final WidgetRef ref;
+
+  const DashboardSidePanel({required this.role, required this.ref, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
+    return Drawer(
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(commonPaddingSize),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Quick Actions", style: TextStyle(fontSize: baseFontSize)),
+              sb(0, 2),
+              ActionTile(
+                icon: Icons.person,
+                label: 'Profile',
+                onTap: () => Navigator.pushNamed(context, Routes.profilepage),
+              ),
+              ActionTile(
+                icon: Icons.list_alt,
+                label: 'Ticket List',
+                onTap: () =>
+                    Navigator.pushNamed(context, Routes.ticketlistpage),
+              ),
+              ActionTile(
+                icon: Icons.add_task,
+                label: 'Add Ticket',
+                onTap: () => Navigator.pushNamed(context, Routes.createticket),
+              ),
+              ActionTile(
+                icon: Icons.logout,
+                label: 'Logout',
+                onTap: () async {
+                  await AuthService().signOut();
+                  Navigator.pushReplacementNamed(context, Routes.signin);
+                },
+              ),
+              if (role == 'Admin') ...[
+                const Divider(height: 32),
+                Text("Admin Controls", style: textTheme.titleSmall),
+                sb(0, 1.5),
+                AdminActionCard(
+                  children: [
+                    ActionTile(
+                      icon: Icons.group,
+                      label: 'User List',
+                      onTap: () {
+                        ref.read(userListProvider.notifier).loadUsers();
+                        Navigator.pushNamed(context, Routes.userlistpage);
+                      },
+                    ),
+                    ActionTile(
+                      icon: Icons.person_add,
+                      label: 'Add User',
+                      onTap: () =>
+                          Navigator.pushNamed(context, Routes.adduserpage),
+                    ),
+                    ActionTile(
+                      icon: Icons.keyboard_tab_sharp,
+                      label: 'Project List',
+                      onTap: () {
+                        ref.read(projectListProvider.notifier).loadProjects();
+                        Navigator.pushNamed(context, Routes.projectlist);
+                      },
+                    ),
+                    ActionTile(
+                      icon: Icons.add,
+                      label: 'Add New Project',
+                      onTap: () =>
+                          Navigator.pushNamed(context, Routes.createproject),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const ActionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      leading: Icon(icon, color: theme.colorScheme.primary),
+      title: Text(label, style: TextStyle(fontSize: baseFontSize)),
+      onTap: onTap,
+      hoverColor: theme.colorScheme.primary.withOpacity(0.1),
+    );
+  }
+}
+
+class AdminActionCard extends StatelessWidget {
+  final List<Widget> children;
+
+  const AdminActionCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: theme.colorScheme.surfaceVariant.withOpacity(0.1),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(children: children),
+      ),
     );
   }
 }

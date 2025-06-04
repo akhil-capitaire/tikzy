@@ -117,7 +117,6 @@ class _TicketRowState extends State<TicketRow> {
   Widget mobileLayout(BuildContext context) {
     final dateFormat = DateFormat('dd MMM yyyy');
     final statusColor = getStatusColor(widget.ticket.status);
-    final priorityColor = getPriorityColor(widget.ticket.status);
 
     return InkWell(
       onTap: () {

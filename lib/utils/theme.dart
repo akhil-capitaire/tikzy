@@ -7,7 +7,7 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     fontFamily: 'Poppins',
     colorScheme: ColorScheme.light(
-      primary: Color(0xFF4C6EF5),
+      primary: Color(0xFF0b66cd),
       secondary: Color(0xFFD97706),
       background: Color(0xFFF8FAFC),
       surface: Color(0xFFFFFFFF),
@@ -18,7 +18,7 @@ class AppTheme {
     ),
     scaffoldBackgroundColor: Color(0xFFF8FAFC),
     appBarTheme: AppBarTheme(
-      color: Color(0xFF4C6EF5),
+      color: Color(0xFF0b66cd),
       elevation: 0,
       titleTextStyle: TextStyle(
         fontSize: ScreenSize.fontSize(20),
@@ -28,7 +28,7 @@ class AppTheme {
     ),
     cardColor: Color(0xFFFFFFFF),
     canvasColor: Color(0xFFF8FAFC),
-    iconTheme: IconThemeData(color: Color(0xFF4C6EF5)),
+    iconTheme: IconThemeData(color: Color(0xFF0b66cd)),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: Color(0xFFD97706),
     ),
@@ -51,7 +51,7 @@ class AppTheme {
       titleLarge: TextStyle(
         fontSize: ScreenSize.fontSize(22),
         fontWeight: FontWeight.bold,
-        color: Color(0xFF4C6EF5),
+        color: Color(0xFF0b66cd),
       ),
       titleMedium: TextStyle(
         fontSize: ScreenSize.fontSize(14),

@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:tikzy/providers/user_provider.dart';
 import 'package:tikzy/services/ticket_services.dart';
+import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
 import 'package:tikzy/utils/spaces.dart';
 import 'package:tikzy/widgets/buttons.dart';
@@ -30,7 +32,23 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   final assignedByController = TextEditingController();
   String selectedPriority = 'Low';
   final priorityOptions = ['Low', 'Medium', 'High'];
+  List<String> userList = [];
+  String selectedUser = '';
   DateTime? dueDate;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchUsers();
+  }
+
+  void fetchUsers() async {
+    final users = await UserService().fetchAllUsernames();
+    setState(() {
+      userList = users;
+      selectedUser = users.isNotEmpty ? users.first : '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,29 +109,69 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                       validator: (value) =>
                           value?.isEmpty ?? true ? 'Required' : null,
                     ),
+                    // sb(0, 2),
+                    // Text('Assignee', style: TextStyle(fontSize: baseFontSize)),
+                    // CustomDropdown(
+                    //   width: 200,
+                    //   options: userList,
+                    //   value: selectedUser,
+                    //   fontSize: baseFontSize,
+                    //   onChanged: (value) {
+                    //     if (value != null && value != selectedUser) {
+                    //       setState(() {
+                    //         selectedUser = value;
+                    //         assigneeController.text = value;
+                    //       });
+                    //     }
+                    //   },
+                    // ),
                     sb(0, 2),
-                    FormInput(
-                      controller: assigneeController,
-                      hintText: 'Assignee',
-                      keyboardType: TextInputType.name,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required' : null,
-                    ),
-                    sb(0, 2),
-                    FormInput(
-                      controller: assignedByController,
-                      hintText: 'Assigned By',
-                      keyboardType: TextInputType.name,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required' : null,
-                    ),
-                    sb(0, 2),
+
                     GestureDetector(
                       onTap: pickDueDate,
                       child: InputDecorator(
                         decoration: InputDecoration(
+                          errorStyle: TextStyle(fontSize: 14),
                           labelText: 'Due Date',
-                          border: inputBorder,
+                          counterText: '',
+
+                          hintStyle: TextStyle(
+                            fontSize: baseFontSize,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          labelStyle: TextStyle(
+                            fontSize: baseFontSize,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.blueAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1.5,
+                            ),
+                          ),
                         ),
                         child: Text(
                           dueDate != null
@@ -124,6 +182,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                       ),
                     ),
                     sb(0, 2),
+                    Text('Priority', style: TextStyle(fontSize: baseFontSize)),
                     CustomDropdown(
                       width: 200,
                       options: priorityOptions,
@@ -209,14 +268,18 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   }
 
   Future<void> submitTicket() async {
+    final user = ref.read(userLocalProvider);
     if (formKey.currentState?.validate() ?? false) {
       // TODO: Handle ticket submission
+      await ref
+          .read(buttonLoadingProvider.notifier)
+          .update((state) => {...state, ButtonType.primary: true});
       await TicketService().createTicket(
         title: titleController.text,
         description: descriptionController.text,
         project: projectController.text,
-        assignee: assigneeController.text,
-        assignedBy: assignedByController.text,
+        assignee: '',
+        assignedBy: user!.id.toString(),
         dueDate: dueDate,
         attachments: selectedFiles,
         priority: selectedPriority,

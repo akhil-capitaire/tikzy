@@ -1,5 +1,9 @@
+import 'dart:io' as io;
+
 import 'package:cloudinary/cloudinary.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart'; // For PlatformFile
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart' show rootBundle;
 
 /// A service to handle file uploads to Cloudinary using the cloudinary package.
 class CloudinaryService {
@@ -49,5 +53,37 @@ class CloudinaryService {
     if (validFiles.isEmpty) return [];
 
     return Future.wait(validFiles.map(uploadFile));
+  }
+
+  /// Converts an asset file into a [PlatformFile].
+
+  Future<PlatformFile> loadAssetAsPlatformFile({
+    required String assetPath,
+    required String fileName,
+  }) async {
+    final byteData = await rootBundle.load(assetPath);
+    final bytes = byteData.buffer.asUint8List();
+
+    if (kIsWeb) {
+      // On web, use bytes directly; no filesystem
+      return PlatformFile(
+        name: fileName,
+        size: bytes.length,
+        bytes: bytes,
+        path: null, // not used on web
+      );
+    } else {
+      // On mobile/desktop, write to temp file and return path
+      final tempDir = await io.Directory.systemTemp.createTemp();
+      final tempFile = io.File('${tempDir.path}/$fileName');
+      await tempFile.writeAsBytes(bytes, flush: true);
+
+      return PlatformFile(
+        name: fileName,
+        size: bytes.length,
+        path: tempFile.path,
+        bytes: null, // uses path for lazy loading
+      );
+    }
   }
 }

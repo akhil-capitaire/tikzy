@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/services/auth_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
-import 'package:tikzy/widgets/snackbar.dart';
 
+import '../../providers/user_provider.dart';
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
 import '../../utils/spaces.dart';
@@ -31,17 +31,6 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
 
     return CustomScaffold(
       body: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(commonRadiusSize),
-          gradient: LinearGradient(
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.12),
-              theme.colorScheme.secondary.withOpacity(0.12),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth > 700;
@@ -103,24 +92,18 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.account_circle_rounded,
-          size: 72,
-          color: theme.colorScheme.primary,
-          shadows: [
-            Shadow(
-              color: theme.colorScheme.primary.withOpacity(0.3),
-              offset: const Offset(0, 4),
-              blurRadius: 8,
-            ),
-          ],
+        Image.asset(
+          'assets/images/logo.png',
+          width: ScreenSize.width(30),
+          height: ScreenSize.height(30),
         ),
-        sb(0, 2),
+        sb(0, 1),
         Text(
           "Tikzy",
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w900,
             color: theme.colorScheme.primary,
+            fontSize: baseFontSize + 10,
             letterSpacing: 2,
             shadows: [
               Shadow(
@@ -146,15 +129,15 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
           vertical: ScreenSize.height(6),
         ),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(commonRadiusSize),
-          boxShadow: [
-            BoxShadow(
-              color: theme.colorScheme.primary.withOpacity(0.06),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          gradient: LinearGradient(
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.12),
+              theme.colorScheme.secondary.withOpacity(0.12),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: Form(
           key: formKey,
@@ -209,9 +192,7 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
                         await AuthService().sendPasswordResetEmail(
                           emailController.text,
                         );
-                        SnackbarHelper.showSnackbar(
-                          "Reset email sent successfully",
-                        );
+
                         setState(() => forgotPassword = !forgotPassword);
 
                         // Navigator.pushReplacementNamed(context, Routes.dashboard);
@@ -227,7 +208,9 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
                           email: emailController.text,
                           password: passwordController.text,
                         );
-
+                        ref
+                            .read(userLocalProvider.notifier)
+                            .loadUserFromPrefs();
                         Navigator.pushReplacementNamed(
                           context,
                           Routes.dashboard,

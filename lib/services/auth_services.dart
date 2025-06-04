@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tikzy/utils/shared_preference.dart';
 
+import '../models/user_model.dart';
 import '../widgets/snackbar.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   /// Stream to observe auth state changes.
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -22,6 +26,25 @@ class AuthService {
         password: password,
       );
       SnackbarHelper.showSnackbar("Logged in successfully");
+      if (credential.user != null) {
+        final query = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+
+        if (query.docs.isNotEmpty) {
+          final userData = query.docs.first;
+          final user = UserModel(
+            id: userData.id,
+            name: userData['name'] ?? '',
+            email: userData['email'] ?? '',
+            role: userData['role'] ?? 'user',
+            createdAt: userData['createdAt'] as Timestamp?,
+          );
+          SharedPreferenceUtils.saveUserModel(user);
+        }
+      }
       return credential;
     } on FirebaseAuthException catch (e) {
       throw AuthException(code: e.code, message: e.message ?? 'Unknown error');
@@ -53,8 +76,22 @@ class AuthService {
   /// Send a password reset email.
   Future<void> sendPasswordResetEmail(String email) async {
     try {
+      final firestore = FirebaseFirestore.instance;
+      final userQuery = await firestore
+          .collection('users')
+          .where('email', isEqualTo: email.trim())
+          .limit(1)
+          .get();
+
+      if (userQuery.docs.isEmpty) {
+        SnackbarHelper.showSnackbar("Email not found", isError: true);
+        throw AuthException(code: "user-not-found", message: "Email not found");
+      }
+
       await _auth.sendPasswordResetEmail(email: email.trim());
+      SnackbarHelper.showSnackbar("Reset email sent successfully");
     } on FirebaseAuthException catch (e) {
+      SnackbarHelper.showSnackbar("Error: ${e.message}", isError: true);
       throw AuthException(code: e.code, message: e.message ?? 'Unknown error');
     }
   }

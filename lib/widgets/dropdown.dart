@@ -13,7 +13,7 @@ class CustomDropdown extends StatelessWidget {
   final IconData icon;
 
   const CustomDropdown({
-    Key? key,
+    super.key,
     required this.options,
     required this.value,
     required this.onChanged,
@@ -22,7 +22,7 @@ class CustomDropdown extends StatelessWidget {
     this.width = 150,
     this.fillColor = const Color(0xFFE0E0E0),
     this.icon = Icons.keyboard_arrow_down,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,19 +35,38 @@ class CustomDropdown extends StatelessWidget {
         style: TextStyle(fontSize: fontSize, color: Colors.black),
         dropdownColor: Colors.white,
         decoration: InputDecoration(
-          filled: true,
-          fillColor: fillColor.withOpacity(0.1),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(commonRadiusSize),
-            borderSide: BorderSide.none,
+          errorStyle: TextStyle(fontSize: 14),
+
+          counterText: '',
+
+          hintStyle: TextStyle(
+            fontSize: baseFontSize,
+            fontWeight: FontWeight.w400,
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(commonRadiusSize),
-            borderSide: BorderSide(color: fillColor, width: 1.5),
+          labelStyle: TextStyle(
+            fontSize: baseFontSize,
+            fontWeight: FontWeight.w400,
           ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 10,
+            horizontal: 16,
+            vertical: 12,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.red, width: 1.5),
           ),
         ),
         items: options.map((s) {

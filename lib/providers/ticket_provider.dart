@@ -1,5 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tikzy/models/user_model.dart';
+import 'package:tikzy/utils/shared_preference.dart';
 
 import '../models/ticket_model.dart';
 import '../services/ticket_services.dart';
@@ -13,8 +15,17 @@ class TicketNotifier extends StateNotifier<AsyncValue<List<Ticket>>> {
 
   Future<void> loadTickets() async {
     try {
+      final UserModel? user = await SharedPreferenceUtils.getUserModel();
       final tickets = await _service.fetchTickets();
-      state = AsyncData(tickets);
+
+      if (user!.role != 'Admin') {
+        final mytickets = tickets
+            .where((ticket) => ticket.assignee == user.name)
+            .toList();
+        state = AsyncData(mytickets);
+      } else {
+        state = AsyncData(tickets);
+      }
     } catch (e, st) {
       state = AsyncError(e, st);
     }

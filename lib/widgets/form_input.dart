@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tikzy/utils/fontsizes.dart';
 
 import '../utils/screen_size.dart';
 
@@ -41,11 +42,19 @@ class _FormInputState extends State<FormInput> {
         labelText: widget.hintText,
         counterText: '',
         suffixIcon: widget.suffix,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+        hintStyle: TextStyle(
+          fontSize: baseFontSize,
+          fontWeight: FontWeight.w400,
         ),
+        labelStyle: TextStyle(
+          fontSize: baseFontSize,
+          fontWeight: FontWeight.w400,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.grey),
@@ -104,14 +113,22 @@ class _FormDescriptionState extends State<FormDescription> {
         maxLines: 12,
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
         decoration: InputDecoration(
+          hintStyle: TextStyle(
+            fontSize: baseFontSize,
+            fontWeight: FontWeight.w400,
+          ),
+          labelStyle: TextStyle(
+            fontSize: baseFontSize,
+            fontWeight: FontWeight.w400,
+          ),
           labelText: widget.hintText,
           alignLabelWithHint: true,
           errorStyle: TextStyle(fontSize: 14),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
           ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Colors.grey),

@@ -81,9 +81,16 @@ class _TicketsListPageState extends ConsumerState<TicketsListPage> {
       child: Scaffold(
         appBar: isMobile
             ? AppBar(
+                centerTitle: true,
                 title: Text(
                   'Tickets',
                   style: TextStyle(fontSize: baseFontSize + 4),
+                ),
+                leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
                 ),
               )
             : null,

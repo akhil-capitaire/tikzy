@@ -6,6 +6,7 @@ import 'package:tikzy/widgets/buttons.dart';
 import 'package:tikzy/widgets/form_input.dart';
 
 import '../../services/project_services.dart';
+import '../../utils/fontsizes.dart';
 
 class AddProjectPage extends ConsumerStatefulWidget {
   const AddProjectPage({super.key});
@@ -44,8 +45,23 @@ class AddProjectPageState extends ConsumerState<AddProjectPage> {
     final theme = Theme.of(context);
     final isLoading =
         ref.watch(buttonLoadingProvider)[ButtonType.primary] ?? false;
-
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return Scaffold(
+      appBar: isMobile
+          ? AppBar(
+              centerTitle: true,
+              title: Text(
+                'Add Project',
+                style: TextStyle(fontSize: baseFontSize + 4),
+              ),
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              ),
+            )
+          : null,
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(ScreenSize.width(4)),
@@ -53,18 +69,22 @@ class AddProjectPageState extends ConsumerState<AddProjectPage> {
             constraints: const BoxConstraints(maxWidth: 500),
             child: Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(commonRadiusSize),
               ),
               elevation: 6,
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(commonPaddingSize),
                 child: Form(
                   key: formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Add Project", style: theme.textTheme.headlineSmall),
-                      sb(0, 3),
+                      if (!isMobile)
+                        Text(
+                          "Add Project",
+                          style: theme.textTheme.headlineSmall,
+                        ),
+                      if (!isMobile) sb(0, 3),
 
                       FormInput(
                         controller: nameController,

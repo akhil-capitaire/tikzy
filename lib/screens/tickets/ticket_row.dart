@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tikzy/utils/spaces.dart';
 
 import '../../models/ticket_model.dart';
 import '../../services/user_services.dart';
@@ -66,6 +67,7 @@ class _TicketRowState extends State<TicketRow> {
               cell(widget.ticket.assignee),
               cell(assignedName),
               statusPill(widget.ticket.status),
+
               priorityPill(widget.ticket.priority),
             ],
           ),
@@ -189,6 +191,7 @@ class _TicketRowState extends State<TicketRow> {
                     ),
                   ),
                 ),
+                sb(10, 0),
                 priorityPill(widget.ticket.priority),
               ],
             ),

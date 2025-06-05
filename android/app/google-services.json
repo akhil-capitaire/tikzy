@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "353510236220",
+    "firebase_url": "https://tickzy-8f3ef-default-rtdb.firebaseio.com",
+    "project_id": "tickzy-8f3ef",
+    "storage_bucket": "tickzy-8f3ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353510236220:android:f510b7e1842c27ccbbe339",
+        "android_client_info": {
+          "package_name": "com.capitaire.tikzy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "353510236220-ss527gbu253msfpahcf848dh8ervjnre.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATH5dr5vL9ICN-so2F-YNh98zrNfhQzlc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "353510236220-ss527gbu253msfpahcf848dh8ervjnre.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

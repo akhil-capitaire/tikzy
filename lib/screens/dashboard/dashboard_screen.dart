@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/providers/project_provider.dart';
@@ -6,6 +7,7 @@ import 'package:tikzy/providers/user_provider.dart';
 import 'package:tikzy/screens/dashboard/section_header.dart';
 import 'package:tikzy/screens/dashboard/ticket_summarycard.dart';
 import 'package:tikzy/services/auth_services.dart';
+import 'package:tikzy/services/notification_services.dart';
 
 import '../../providers/ticket_provider.dart';
 import '../../utils/fontsizes.dart';
@@ -28,6 +30,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void initState() {
     super.initState();
     ref.read(userLocalProvider.notifier).loadUserFromPrefs();
+    NotificationService().showBackgroundNotification(RemoteMessage());
   }
 
   @override

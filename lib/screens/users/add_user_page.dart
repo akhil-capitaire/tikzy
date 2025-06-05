@@ -44,7 +44,21 @@ class _AddUserPageState extends ConsumerState<AddUserPage> {
     final maxWidth = 700.0;
 
     return Scaffold(
-      appBar: isMobile ? AppBar(centerTitle: true) : null,
+      appBar: isMobile
+          ? AppBar(
+              centerTitle: true,
+              title: Text(
+                'Add User',
+                style: TextStyle(fontSize: baseFontSize + 4),
+              ),
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -66,16 +80,17 @@ class _AddUserPageState extends ConsumerState<AddUserPage> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: Text(
-                            'Add New User',
-                            style: TextStyle(
-                              fontSize: baseFontSize + 6,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
+                        if (isWeb)
+                          Center(
+                            child: Text(
+                              'Add New User',
+                              style: TextStyle(
+                                fontSize: baseFontSize + 6,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
-                        ),
                         sb(0, 4),
                         Center(
                           child: GestureDetector(

@@ -18,19 +18,34 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final user = ref.watch(userLocalProvider);
     final dateFormat = DateFormat('yMMMd').add_jm();
 
-    return Scaffold(
-      body: user == null
-          ? const Center(child: Text('No user data available.'))
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                final isMobile = constraints.maxWidth < 600;
-                final cardWidth = isMobile ? constraints.maxWidth * 0.9 : 500.0;
+    return user == null
+        ? const Center(child: Text('No user data available.'))
+        : LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 600;
+              final cardWidth = isMobile ? constraints.maxWidth * 0.9 : 500.0;
 
-                return Center(
+              return Scaffold(
+                appBar: isMobile
+                    ? AppBar(
+                        centerTitle: true,
+                        title: Text(
+                          'Profile',
+                          style: TextStyle(fontSize: baseFontSize + 4),
+                        ),
+                        leading: IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                        ),
+                      )
+                    : null,
+                body: Center(
                   child: Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(commonRadiusSize),
                     ),
                     child: SizedBox(
                       width: cardWidth,
@@ -83,10 +98,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-    );
+                ),
+              );
+            },
+          );
   }
 }
 

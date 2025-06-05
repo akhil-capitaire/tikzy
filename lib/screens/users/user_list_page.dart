@@ -15,9 +15,16 @@ class UserListPage extends ConsumerWidget {
     return Scaffold(
       appBar: isMobile
           ? AppBar(
+              centerTitle: true,
               title: Text(
                 'Users',
                 style: TextStyle(fontSize: baseFontSize + 4),
+              ),
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
               ),
             )
           : null,

@@ -6,6 +6,7 @@ import 'package:tikzy/providers/ticket_provider.dart';
 import 'package:tikzy/services/ticket_services.dart';
 import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/utils/spaces.dart';
 import 'package:tikzy/widgets/dropdown.dart';
 
 import '../../models/ticket_model.dart';
@@ -107,14 +108,17 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     return Scaffold(
       appBar: isMobile
           ? AppBar(
+              centerTitle: true,
               title: Text(
                 'Ticket #${widget.ticket.id}',
-                style: TextStyle(
-                  fontSize: baseFontSize + 2,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: baseFontSize + 4),
               ),
-              elevation: 1,
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              ),
             )
           : null,
       backgroundColor: Colors.grey.shade100,
@@ -158,9 +162,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: buildDescriptionCard(),
+                                ),
+                                sb(0, 2),
                                 buildMetaCard(),
-                                const SizedBox(height: 24),
-                                buildDescriptionCard(),
                               ],
                             )
                           : Row(

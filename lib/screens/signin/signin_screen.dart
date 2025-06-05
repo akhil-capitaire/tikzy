@@ -79,12 +79,7 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
   Widget buildNarrowLayout(ThemeData theme) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        buildTitlePanel(theme),
-        sb(0, 5),
-        buildAuthCard(theme),
-        sb(0, 3),
-      ],
+      children: [buildTitlePanel(theme), sb(0, 4), buildAuthCard(theme)],
     );
   }
 
@@ -97,7 +92,7 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
           width: ScreenSize.width(30),
           height: ScreenSize.height(30),
         ),
-        sb(0, 1),
+        sb(0, 0),
         Text(
           "Tikzy",
           style: theme.textTheme.headlineMedium?.copyWith(

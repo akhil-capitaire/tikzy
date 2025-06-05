@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/ticket_model.dart';
+import '../../services/user_services.dart';
 import '../../utils/routes.dart';
 import '../../utils/status_colors.dart';
 
@@ -15,6 +16,13 @@ class TicketRow extends StatefulWidget {
 }
 
 class _TicketRowState extends State<TicketRow> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchAssigneeName();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
@@ -56,7 +64,7 @@ class _TicketRowState extends State<TicketRow> {
                     : '-',
               ),
               cell(widget.ticket.assignee),
-              cell(widget.ticket.assignedBy),
+              cell(assignedName),
               statusPill(widget.ticket.status),
               priorityPill(widget.ticket.priority),
             ],
@@ -64,6 +72,18 @@ class _TicketRowState extends State<TicketRow> {
         ),
       ),
     );
+  }
+
+  String assignedName = '';
+  fetchAssigneeName() async {
+    final user = await UserService().fetchUserNameById(
+      widget.ticket.assignedBy,
+    );
+    if (user != null) {
+      setState(() {
+        assignedName = user;
+      });
+    }
   }
 
   Widget priorityPill(String priority) {

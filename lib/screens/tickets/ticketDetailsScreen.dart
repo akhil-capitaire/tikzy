@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:tikzy/models/user_model.dart';
 import 'package:tikzy/providers/ticket_provider.dart';
 import 'package:tikzy/services/ticket_services.dart';
+import 'package:tikzy/services/user_services.dart';
+import 'package:tikzy/utils/fontsizes.dart';
 import 'package:tikzy/widgets/dropdown.dart';
 
 import '../../models/ticket_model.dart';
@@ -27,17 +30,35 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   bool isModified = false;
 
   final statusOptions = ['Open', 'In Progress', 'Closed', 'On Hold'];
+  List<UserModel> assignees = [];
+  String selectedAssignee = '';
   final priorityOptions = ['Low', 'Medium', 'High'];
   final baseFontSize = 14.0;
   final dateFormat = DateFormat('MMM d, y');
-
+  String assignedName = '';
   @override
   void initState() {
     super.initState();
     selectedStatus = widget.ticket.status;
     selectedPriority = widget.ticket.priority;
     selectedDueDate = widget.ticket.dueDate!;
+    selectedAssignee = widget.ticket.assignee;
     updatedAttachments = List<String>.from(widget.ticket.attachments);
+    fetchAssignee();
+  }
+
+  fetchAssignee() async {
+    assignees = await UserService().fetchUsers();
+    final user = await UserService().fetchUserNameById(
+      widget.ticket.assignedBy,
+    );
+    if (user != null) {
+      setState(() {
+        assignedName = user;
+        if (widget.ticket.assignee.isEmpty)
+          selectedAssignee = assignees.isNotEmpty ? assignees.first.name : '';
+      });
+    }
   }
 
   void markModified() {
@@ -65,6 +86,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       dueDate: selectedDueDate,
       status: selectedStatus,
       priority: selectedPriority,
+      assignee: selectedAssignee,
     );
     ref.read(ticketNotifierProvider.notifier).loadTickets();
     setState(() => isModified = false);
@@ -191,7 +213,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.grey.shade50,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: EdgeInsets.all(commonPaddingSize),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -201,8 +223,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   metaField('Project', widget.ticket.projectName),
-                  metaField('Assignee', widget.ticket.assignee),
-                  metaField('Assigned By', widget.ticket.assignedBy),
+                  if (widget.ticket.assignee.isNotEmpty)
+                    metaField('Assignee', widget.ticket.assignee),
+                  metaField('Assigned By', assignedName),
                   dateField('Created', widget.ticket.createdDate),
                   if (widget.ticket.closedDate != null)
                     dateField('Closed', widget.ticket.closedDate!),
@@ -221,6 +244,25 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 8),
+                  Text("Change Assignee", style: fieldLabelStyle()),
+                  const SizedBox(height: 6),
+                  CustomDropdown(
+                    width: 200,
+                    options: assignees.map((user) => user.name).toList(),
+                    value: selectedAssignee,
+                    fillColor: getStatusColor(selectedStatus),
+                    fontSize: baseFontSize,
+                    onChanged: (value) {
+                      if (value != null && value != selectedAssignee) {
+                        setState(() {
+                          selectedAssignee = value;
+                          markModified();
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   dateField('Change Due', selectedDueDate, editable: true),
                   const SizedBox(height: 8),
                   Text("Change Status", style: fieldLabelStyle()),

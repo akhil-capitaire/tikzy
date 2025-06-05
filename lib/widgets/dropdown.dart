@@ -19,7 +19,7 @@ class CustomDropdown extends StatelessWidget {
     required this.onChanged,
     this.fontSize = 14,
     this.height = 50,
-    this.width = 150,
+    this.width = 100,
     this.fillColor = const Color(0xFFE0E0E0),
     this.icon = Icons.keyboard_arrow_down,
   });

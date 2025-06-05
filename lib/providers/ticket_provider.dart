@@ -31,6 +31,18 @@ class TicketNotifier extends StateNotifier<AsyncValue<List<Ticket>>> {
     }
   }
 
+  unassignedTickets() async {
+    try {
+      final tickets = await _service.fetchTickets();
+      final unassigned = tickets
+          .where((ticket) => ticket.assignee.isEmpty)
+          .toList();
+      state = AsyncData(unassigned);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
   Future<void> refresh() => loadTickets();
 
   Future<void> createTicket({

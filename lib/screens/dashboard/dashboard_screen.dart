@@ -333,6 +333,16 @@ class DashboardSidePanel extends StatelessWidget {
                       onTap: () =>
                           Navigator.pushNamed(context, Routes.createproject),
                     ),
+                    ActionTile(
+                      icon: Icons.question_mark_sharp,
+                      label: 'Unassigned Tickets',
+                      onTap: () {
+                        ref
+                            .read(ticketNotifierProvider.notifier)
+                            .unassignedTickets();
+                        Navigator.pushNamed(context, Routes.ticketlistpage);
+                      },
+                    ),
                   ],
                 ),
               ],

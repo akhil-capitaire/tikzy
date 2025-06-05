@@ -73,34 +73,40 @@ class _TicketsListPageState extends ConsumerState<TicketsListPage> {
     final isMobile = MediaQuery.of(context).size.width < 600;
     final tickets = ref.watch(ticketNotifierProvider).value;
     allTickets = tickets ?? [];
-    return Scaffold(
-      appBar: isMobile
-          ? AppBar(
-              title: Text(
-                'Tickets',
-                style: TextStyle(fontSize: baseFontSize + 4),
+    return PopScope(
+      onPopInvoked: (context) {
+        clearFilters();
+        ref.read(ticketNotifierProvider.notifier).loadTickets();
+      },
+      child: Scaffold(
+        appBar: isMobile
+            ? AppBar(
+                title: Text(
+                  'Tickets',
+                  style: TextStyle(fontSize: baseFontSize + 4),
+                ),
+              )
+            : null,
+        body: Padding(
+          padding: EdgeInsets.all(ScreenSize.width(4)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildFilterRow(),
+              const SizedBox(height: 16),
+              if (!isMobile) buildDesktopHeader(),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: filteredTickets.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (_, index) {
+                    final ticket = filteredTickets[index];
+                    return TicketRow(ticket: ticket);
+                  },
+                ),
               ),
-            )
-          : null,
-      body: Padding(
-        padding: EdgeInsets.all(ScreenSize.width(4)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildFilterRow(),
-            const SizedBox(height: 16),
-            if (!isMobile) buildDesktopHeader(),
-            Expanded(
-              child: ListView.separated(
-                itemCount: filteredTickets.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (_, index) {
-                  final ticket = filteredTickets[index];
-                  return TicketRow(ticket: ticket);
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -40,7 +40,7 @@ class AuthService {
             name: userData['name'] ?? '',
             email: userData['email'] ?? '',
             role: userData['role'] ?? 'user',
-            createdAt: userData['createdAt'] as Timestamp?,
+            createdAt: userData['createdAt'],
           );
           SharedPreferenceUtils.saveUserModel(user);
         }

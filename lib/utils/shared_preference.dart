@@ -44,7 +44,7 @@ class SharedPreferenceUtils {
   static Future<UserModel?> getUserModel() async {
     final prefs = await SharedPreferences.getInstance();
     final userModelJson = prefs.getString(userModelKey);
-
+    print(userModelJson);
     if (userModelJson != null) {
       final Map<String, dynamic> json = jsonDecode(userModelJson);
       return UserModel.fromJson(json);

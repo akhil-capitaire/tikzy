@@ -3,10 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:tikzy/models/project_model.dart';
+import 'package:tikzy/models/user_model.dart';
 import 'package:tikzy/providers/user_provider.dart';
+import 'package:tikzy/services/project_services.dart';
 import 'package:tikzy/services/ticket_services.dart';
 import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/utils/shared_preference.dart';
 import 'package:tikzy/utils/spaces.dart';
 import 'package:tikzy/widgets/buttons.dart';
 import 'package:tikzy/widgets/form_input.dart';
@@ -33,20 +37,28 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   String selectedPriority = 'Low';
   final priorityOptions = ['Low', 'Medium', 'High'];
   List<String> userList = [];
+  List<ProjectModel> projectList = [];
   String selectedUser = '';
+  String selectedProject = '';
   DateTime? dueDate;
+  UserModel? userdata = UserModel(id: '', name: '', email: '', role: '');
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    fetchUsers();
+    fetchdata();
   }
 
-  void fetchUsers() async {
+  void fetchdata() async {
     final users = await UserService().fetchAllUsernames();
+    final projects = await ProjectService().fetchProjects();
+    userdata = await SharedPreferenceUtils.getUserModel();
     setState(() {
       userList = users;
+      projectList = projects;
       selectedUser = users.isNotEmpty ? users.first : '';
+      selectedProject = projects.isNotEmpty ? projects.first.name : '';
+      print(userdata!.projectAccess);
     });
   }
 
@@ -102,29 +114,66 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                           value?.isEmpty ?? true ? 'Required' : null,
                     ),
                     sb(0, 2),
-                    FormInput(
-                      controller: projectController,
-                      hintText: 'Project Name',
-                      keyboardType: TextInputType.text,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required' : null,
-                    ),
-                    // sb(0, 2),
-                    // Text('Assignee', style: TextStyle(fontSize: baseFontSize)),
-                    // CustomDropdown(
-                    //   width: 200,
-                    //   options: userList,
-                    //   value: selectedUser,
-                    //   fontSize: baseFontSize,
-                    //   onChanged: (value) {
-                    //     if (value != null && value != selectedUser) {
-                    //       setState(() {
-                    //         selectedUser = value;
-                    //         assigneeController.text = value;
-                    //       });
-                    //     }
-                    //   },
-                    // ),
+
+                    if (userdata!.role == "Admin") sb(0, 2),
+                    if (userdata!.role == "Admin")
+                      Text(
+                        'Assignee',
+                        style: TextStyle(fontSize: baseFontSize),
+                      ),
+                    if (userdata!.role == "Admin")
+                      CustomDropdown(
+                        width: 200,
+                        options: userList,
+                        value: selectedUser,
+                        fontSize: baseFontSize,
+                        onChanged: (value) {
+                          if (value != null && value != selectedUser) {
+                            setState(() {
+                              selectedUser = value;
+                              assigneeController.text = value;
+                            });
+                          }
+                        },
+                      ),
+                    sb(0, 2),
+                    if (userdata != null)
+                      Text(
+                        'Project Name',
+                        style: TextStyle(fontSize: baseFontSize),
+                      ),
+                    if (userdata!.role == 'Admin' || userdata!.role == 'Staff')
+                      CustomDropdown(
+                        width: 200,
+                        options: projectList
+                            .map((project) => project.name)
+                            .toList(),
+                        value: selectedProject,
+                        fontSize: baseFontSize,
+                        onChanged: (value) {
+                          if (value != null && value != selectedProject) {
+                            setState(() {
+                              selectedProject = value;
+                            });
+                          }
+                        },
+                      ),
+                    if (userdata!.role == 'User')
+                      CustomDropdown(
+                        width: 200,
+                        options: userdata!.projectAccess
+                            .map((project) => project.name)
+                            .toList(),
+                        value: selectedProject,
+                        fontSize: baseFontSize,
+                        onChanged: (value) {
+                          if (value != null && value != selectedProject) {
+                            setState(() {
+                              selectedProject = value;
+                            });
+                          }
+                        },
+                      ),
                     sb(0, 2),
 
                     GestureDetector(
@@ -277,8 +326,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       await TicketService().createTicket(
         title: titleController.text,
         description: descriptionController.text,
-        project: projectController.text,
-        assignee: '',
+        project: selectedProject,
+        assignee: assigneeController.text,
         assignedBy: user!.id.toString(),
         dueDate: dueDate,
         attachments: selectedFiles,

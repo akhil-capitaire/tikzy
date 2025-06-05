@@ -29,6 +29,15 @@ class UserService {
     return snapshot.docs.map((doc) => UserModel.fromDocument(doc)).toList();
   }
 
+  /// Fetch a user's name by their user ID.
+  Future<String?> fetchUserNameById(String userId) async {
+    final doc = await _firestore.collection('users').doc(userId).get();
+    if (doc.exists) {
+      return doc.data()?['name'] as String?;
+    }
+    return null;
+  }
+
   Future<void> createUser({
     required String name,
     required String email,

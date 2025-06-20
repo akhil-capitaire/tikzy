@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:tikzy/models/project_model.dart';
 import 'package:tikzy/models/user_model.dart';
+import 'package:tikzy/providers/user_list_provider.dart';
 import 'package:tikzy/providers/user_provider.dart';
+import 'package:tikzy/services/notification_services.dart';
 import 'package:tikzy/services/project_services.dart';
 import 'package:tikzy/services/ticket_services.dart';
 import 'package:tikzy/services/user_services.dart';
@@ -17,6 +19,7 @@ import 'package:tikzy/widgets/form_input.dart';
 
 import '../../providers/ticket_provider.dart';
 import '../../utils/status_colors.dart';
+import '../../widgets/custom_scaffold.dart';
 import '../../widgets/dropdown.dart';
 
 class CreateTicketPage extends ConsumerStatefulWidget {
@@ -34,7 +37,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   final projectController = TextEditingController();
   final assigneeController = TextEditingController();
   final assignedByController = TextEditingController();
-  String selectedPriority = 'Low';
+  String selectedPriority = '';
   final priorityOptions = ['Low', 'Medium', 'High'];
   List<String> userList = [];
   List<ProjectModel> projectList = [];
@@ -56,9 +59,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
     setState(() {
       userList = users;
       projectList = projects;
-      selectedUser = users.isNotEmpty ? users.first : '';
-      selectedProject = projects.isNotEmpty ? projects.first.name : '';
-      print(userdata!.projectAccess);
     });
   }
 
@@ -73,16 +73,8 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       borderSide: BorderSide(color: theme.dividerColor),
     );
 
-    return Scaffold(
-      appBar: isMobile
-          ? AppBar(
-              title: Text(
-                'Create Ticket',
-                style: TextStyle(fontSize: baseFontSize),
-              ),
-              elevation: 0.5,
-            )
-          : null,
+    return CustomScaffold(
+      isScrollable: true,
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
@@ -333,6 +325,20 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
         attachments: selectedFiles,
         priority: selectedPriority,
       );
+      await ref.read(userListProvider.notifier).loadUsers();
+      final userlist = ref.read(userListProvider).value;
+      print(userlist);
+      final filteredUserList = (userlist ?? [])
+          .where((element) => element.role == 'Admin')
+          .toList();
+      print(filteredUserList.length);
+      for (int i = 0; i < filteredUserList.length; i++) {
+        await NotificationService().sendPushyNotification(
+          title: 'New Ticket Created',
+          deviceToken: filteredUserList[i].pushyToken.toString(),
+          message: 'A new ticket has been created by ${user.name}',
+        );
+      }
       ref.read(ticketNotifierProvider.notifier).loadTickets();
       Navigator.pop(context);
     }

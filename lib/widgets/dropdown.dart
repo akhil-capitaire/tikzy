@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tikzy/utils/fontsizes.dart';
 
-/// A reusable, customizable dropdown widget with modern UI styling.
 class CustomDropdown extends StatelessWidget {
   final List<String> options;
   final String? value;
@@ -26,19 +25,25 @@ class CustomDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isValidValue =
+        value != null && value!.isNotEmpty && options.contains(value);
+    final String? selectedValue = isValidValue ? value : null;
+
     return SizedBox(
       height: height,
       width: width,
       child: DropdownButtonFormField<String>(
-        value: value,
+        value: selectedValue,
+        hint: Text(
+          'select',
+          style: TextStyle(fontSize: fontSize, color: Colors.grey),
+        ),
         icon: Icon(icon),
         style: TextStyle(fontSize: fontSize, color: Colors.black),
         dropdownColor: Colors.white,
         decoration: InputDecoration(
           errorStyle: TextStyle(fontSize: 14),
-
           counterText: '',
-
           hintStyle: TextStyle(
             fontSize: baseFontSize,
             fontWeight: FontWeight.w400,
@@ -47,17 +52,16 @@ class CustomDropdown extends StatelessWidget {
             fontSize: baseFontSize,
             fontWeight: FontWeight.w400,
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+          contentPadding: EdgeInsets.all(commonPaddingSize),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(commonRadiusSize),
           ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(commonRadiusSize),
             borderSide: const BorderSide(color: Colors.grey),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(commonRadiusSize),
             borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
           ),
           errorBorder: OutlineInputBorder(

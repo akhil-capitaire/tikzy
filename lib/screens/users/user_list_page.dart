@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/providers/user_list_provider.dart';
 import 'package:tikzy/screens/users/user_widget.dart';
 
-import '../../utils/fontsizes.dart';
+import '../../widgets/custom_scaffold.dart';
 
 class UserListPage extends ConsumerWidget {
   const UserListPage({super.key});
@@ -12,22 +12,8 @@ class UserListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userListProvider);
     final isMobile = MediaQuery.of(context).size.width < 600;
-    return Scaffold(
-      appBar: isMobile
-          ? AppBar(
-              centerTitle: true,
-              title: Text(
-                'Users',
-                style: TextStyle(fontSize: baseFontSize + 4),
-              ),
-              leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-              ),
-            )
-          : null,
+    return CustomScaffold(
+      isScrollable: true,
       body: userAsync.when(
         data: (users) => UserListBody(users: users),
         loading: () => const Center(child: CircularProgressIndicator()),

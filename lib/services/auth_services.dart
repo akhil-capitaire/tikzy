@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tikzy/utils/shared_preference.dart';
 
+import '../models/project_model.dart';
 import '../models/user_model.dart';
 import '../widgets/snackbar.dart';
+import 'notification_services.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -25,6 +30,7 @@ class AuthService {
         email: email.trim(),
         password: password,
       );
+      if (!kIsWeb && Platform.isAndroid) await NotificationService().init();
       SnackbarHelper.showSnackbar("Logged in successfully");
       if (credential.user != null) {
         final query = await FirebaseFirestore.instance
@@ -41,6 +47,23 @@ class AuthService {
             email: userData['email'] ?? '',
             role: userData['role'] ?? 'user',
             createdAt: userData['createdAt'],
+            avatarUrl: userData.data().containsKey('avatarUrl')
+                ? userData['avatarUrl']
+                : '',
+            pushyToken: userData.data().containsKey('pushyToken')
+                ? userData['pushyToken']
+                : '',
+            updatedAt: userData.data().containsKey('updatedAt')
+                ? userData['updatedAt']
+                : Timestamp.now(),
+            projectAccess:
+                (userData['projectAccess'] as List<dynamic>?)
+                    ?.map(
+                      (e) =>
+                          ProjectModel.fromJson(Map<String, dynamic>.from(e)),
+                    )
+                    .toList() ??
+                [],
           );
           SharedPreferenceUtils.saveUserModel(user);
         }

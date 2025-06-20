@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/providers/project_provider.dart';
@@ -7,13 +6,13 @@ import 'package:tikzy/providers/user_provider.dart';
 import 'package:tikzy/screens/dashboard/section_header.dart';
 import 'package:tikzy/screens/dashboard/ticket_summarycard.dart';
 import 'package:tikzy/services/auth_services.dart';
-import 'package:tikzy/services/notification_services.dart';
 
 import '../../providers/ticket_provider.dart';
 import '../../utils/fontsizes.dart';
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
 import '../../utils/spaces.dart';
+import '../../widgets/custom_scaffold.dart';
 import '../tickets/ticket_row.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -24,13 +23,10 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   void initState() {
     super.initState();
     ref.read(userLocalProvider.notifier).loadUserFromPrefs();
-    NotificationService().showBackgroundNotification(RemoteMessage());
   }
 
   @override
@@ -39,41 +35,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final role = user?.role ?? 'user';
     final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
+    final tickets = ref.watch(ticketNotifierProvider);
+    Widget buildTicketList() {
+      return ListView.separated(
+        itemCount: tickets.value?.length ?? 0,
+        separatorBuilder: (_, __) => sb(0, 2),
+        itemBuilder: (_, index) {
+          return TicketRow(ticket: tickets.value![index]);
+        },
+      );
+    }
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset('assets/images/logo.png', height: ScreenSize.height(5)),
-            sb(2, 0),
-            Text(
-              "Tikzy",
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: theme.colorScheme.primary,
-                fontSize: baseFontSize + 10,
-                letterSpacing: 2,
-                shadows: [
-                  Shadow(
-                    color: theme.colorScheme.primary.withOpacity(0.25),
-                    offset: const Offset(0, 2),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune),
-            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-          ),
-        ],
-      ),
-      endDrawer: DashboardSidePanel(role: role, ref: ref),
+    return CustomScaffold(
+      isScrollable: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(ScreenSize.width(4)),
@@ -239,18 +213,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               )
               .toList(),
         );
-      },
-    );
-  }
-
-  Widget buildTicketList() {
-    final tickets = ref.watch(ticketNotifierProvider).value;
-
-    return ListView.separated(
-      itemCount: tickets?.length ?? 0,
-      separatorBuilder: (_, __) => sb(0, 2),
-      itemBuilder: (_, index) {
-        return TicketRow(ticket: tickets![index]);
       },
     );
   }

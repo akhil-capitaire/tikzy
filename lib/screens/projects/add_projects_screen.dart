@@ -7,6 +7,7 @@ import 'package:tikzy/widgets/form_input.dart';
 
 import '../../services/project_services.dart';
 import '../../utils/fontsizes.dart';
+import '../../widgets/custom_scaffold.dart';
 
 class AddProjectPage extends ConsumerStatefulWidget {
   const AddProjectPage({super.key});
@@ -46,22 +47,8 @@ class AddProjectPageState extends ConsumerState<AddProjectPage> {
     final isLoading =
         ref.watch(buttonLoadingProvider)[ButtonType.primary] ?? false;
     final isMobile = MediaQuery.of(context).size.width < 600;
-    return Scaffold(
-      appBar: isMobile
-          ? AppBar(
-              centerTitle: true,
-              title: Text(
-                'Add Project',
-                style: TextStyle(fontSize: baseFontSize + 4),
-              ),
-              leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-              ),
-            )
-          : null,
+    return CustomScaffold(
+      isScrollable: true,
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(ScreenSize.width(4)),

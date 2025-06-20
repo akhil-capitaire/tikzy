@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/models/user_model.dart';
+import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/shared_preference.dart';
 
 import '../models/ticket_model.dart';
@@ -31,12 +32,20 @@ class TicketNotifier extends StateNotifier<AsyncValue<List<Ticket>>> {
     }
   }
 
-  unassignedTickets() async {
+  Future<void> unassignedTickets() async {
     try {
       final tickets = await _service.fetchTickets();
+      final users = await UserService().fetchUsers();
+      final userNames = users.map((u) => u.name).toSet();
+
       final unassigned = tickets
-          .where((ticket) => ticket.assignee.isEmpty)
+          .where(
+            (ticket) =>
+                ticket.assignee.isEmpty || !userNames.contains(ticket.assignee),
+          )
+          .toSet()
           .toList();
+
       state = AsyncData(unassigned);
     } catch (e, st) {
       state = AsyncError(e, st);

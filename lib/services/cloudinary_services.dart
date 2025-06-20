@@ -19,9 +19,9 @@ class CloudinaryService {
   ///
   /// Returns the secure URL of the uploaded file.
   Future<String> uploadFile(PlatformFile file) async {
-    if (file.bytes == null) {
-      throw ArgumentError('File bytes cannot be null: ${file.name}');
-    }
+    // if (file.bytes == null) {
+    //   throw ArgumentError('File bytes cannot be null: ${file.name}');
+    // }
 
     final response = await _cloudinary.upload(
       file: file.path,

@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/services/auth_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
 
+import '../../providers/ticket_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
 import '../../utils/spaces.dart';
 import '../../widgets/buttons.dart';
-import '../../widgets/custom_scaffold.dart';
 import '../../widgets/form_input.dart';
 
 class SigninScreen extends ConsumerStatefulWidget {
@@ -29,7 +29,7 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return CustomScaffold(
+    return Scaffold(
       body: Container(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -45,11 +45,8 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
                       child: buildWideLayout(theme),
                     )
                   : SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ScreenSize.width(6),
-                        vertical: ScreenSize.height(6),
-                      ),
+                      physics: AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.all(commonPaddingSize),
                       child: buildNarrowLayout(theme),
                     ),
             );
@@ -119,6 +116,7 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
       borderRadius: BorderRadius.circular(commonRadiusSize),
       shadowColor: theme.colorScheme.primary.withOpacity(0.4),
       child: Container(
+        width: double.infinity,
         padding: EdgeInsets.symmetric(
           horizontal: ScreenSize.width(6),
           vertical: ScreenSize.height(6),
@@ -203,9 +201,10 @@ class SigninScreenState extends ConsumerState<SigninScreen> {
                           email: emailController.text,
                           password: passwordController.text,
                         );
-                        ref
+                        await ref
                             .read(userLocalProvider.notifier)
                             .loadUserFromPrefs();
+                        ref.read(ticketNotifierProvider.notifier).loadTickets();
                         Navigator.pushReplacementNamed(
                           context,
                           Routes.dashboard,

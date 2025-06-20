@@ -36,7 +36,7 @@ class SharedPreferenceUtils {
 
   static Future<void> saveUserModel(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
-    print(user.avatarUrl);
+    // print(user.avatarUrl);
     final userModelJson = jsonEncode(user.toJson());
     await prefs.setString(userModelKey, userModelJson);
   }
@@ -44,7 +44,7 @@ class SharedPreferenceUtils {
   static Future<UserModel?> getUserModel() async {
     final prefs = await SharedPreferences.getInstance();
     final userModelJson = prefs.getString(userModelKey);
-    print(userModelJson);
+    // print(userModelJson);
     if (userModelJson != null) {
       final Map<String, dynamic> json = jsonDecode(userModelJson);
       return UserModel.fromJson(json);

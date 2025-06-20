@@ -4,8 +4,10 @@ import 'package:tikzy/providers/project_provider.dart';
 import 'package:tikzy/screens/projects/project_card.dart';
 import 'package:tikzy/screens/projects/project_row.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/utils/screen_size.dart';
 
 import '../../models/project_model.dart';
+import '../../widgets/custom_scaffold.dart';
 
 class ProjectListPage extends ConsumerWidget {
   const ProjectListPage({super.key});
@@ -15,22 +17,8 @@ class ProjectListPage extends ConsumerWidget {
     final projectAsync = ref.watch(projectListProvider);
     final isMobile = MediaQuery.of(context).size.width < 600;
 
-    return Scaffold(
-      appBar: isMobile
-          ? AppBar(
-              centerTitle: true,
-              title: Text(
-                'Project List',
-                style: TextStyle(fontSize: baseFontSize + 4),
-              ),
-              leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-              ),
-            )
-          : null,
+    return CustomScaffold(
+      isScrollable: true,
       body: projectAsync.when(
         data: (projects) => ProjectListBody(projects: projects),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -67,40 +55,26 @@ class _ProjectListBodyState extends State<ProjectListBody> {
       return const Center(child: Text('No users found.'));
     }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search users...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 0,
-                horizontal: 12,
-              ),
-            ),
-            onChanged: (val) => setState(() => _search = val),
+    return Container(
+      height: ScreenSize.screenHeight,
+      child: Column(
+        children: [
+          if (isDesktop) const ProjectTableHeader(),
+          Expanded(
+            child: filtered.isEmpty
+                ? const Center(child: Text('No users match your search.'))
+                : ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final project = filtered[index];
+                      return isDesktop
+                          ? ProjectTableRow(project: project)
+                          : ProjectCard(project: project);
+                    },
+                  ),
           ),
-        ),
-        if (isDesktop) const ProjectTableHeader(),
-        Expanded(
-          child: filtered.isEmpty
-              ? const Center(child: Text('No users match your search.'))
-              : ListView.builder(
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final project = filtered[index];
-                    return isDesktop
-                        ? ProjectTableRow(project: project)
-                        : ProjectCard(project: project);
-                  },
-                ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/utils/screen_size.dart';
 
 import '../../models/user_model.dart';
 import '../../providers/user_list_provider.dart';
@@ -12,11 +13,11 @@ class UserListBody extends StatefulWidget {
   const UserListBody({required this.users});
 
   @override
-  State<UserListBody> createState() => _UserListBodyState();
+  State<UserListBody> createState() => UserListBodyState();
 }
 
-class _UserListBodyState extends State<UserListBody> {
-  String _search = '';
+class UserListBodyState extends State<UserListBody> {
+  String search = '';
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +25,8 @@ class _UserListBodyState extends State<UserListBody> {
     final filtered = widget.users
         .where(
           (u) =>
-              u.name.toLowerCase().contains(_search.toLowerCase()) ||
-              u.email.toLowerCase().contains(_search.toLowerCase()),
+              u.name.toLowerCase().contains(search.toLowerCase()) ||
+              u.email.toLowerCase().contains(search.toLowerCase()),
         )
         .toList();
 
@@ -33,40 +34,26 @@ class _UserListBodyState extends State<UserListBody> {
       return const Center(child: Text('No users found.'));
     }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search users...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 0,
-                horizontal: 12,
-              ),
-            ),
-            onChanged: (val) => setState(() => _search = val),
+    return Container(
+      height: ScreenSize.screenHeight,
+      child: Column(
+        children: [
+          if (isDesktop) const UserTableHeader(),
+          Expanded(
+            child: filtered.isEmpty
+                ? const Center(child: Text('No users match your search.'))
+                : ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final user = filtered[index];
+                      return isDesktop
+                          ? UserTableRow(user: user)
+                          : UserCard(user: user);
+                    },
+                  ),
           ),
-        ),
-        if (isDesktop) const UserTableHeader(),
-        Expanded(
-          child: filtered.isEmpty
-              ? const Center(child: Text('No users match your search.'))
-              : ListView.builder(
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final user = filtered[index];
-                    return isDesktop
-                        ? UserTableRow(user: user)
-                        : UserCard(user: user);
-                  },
-                ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

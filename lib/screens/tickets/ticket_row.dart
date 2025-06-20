@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tikzy/utils/fontsizes.dart';
 import 'package:tikzy/utils/spaces.dart';
 
 import '../../models/ticket_model.dart';
@@ -44,7 +45,7 @@ class _TicketRowState extends State<TicketRow> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          padding: EdgeInsets.all(commonPaddingSize),
           decoration: const BoxDecoration(
             color: Colors.transparent,
             border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0))),
@@ -149,7 +150,6 @@ class _TicketRowState extends State<TicketRow> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -261,7 +261,7 @@ class _TicketRowState extends State<TicketRow> {
 
             /// Assigned By
             Text(
-              "Assigned by ${widget.ticket.assignedBy}",
+              "Assigned by ${assignedName}",
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],

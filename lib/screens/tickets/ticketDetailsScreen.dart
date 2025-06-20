@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:tikzy/models/user_model.dart';
 import 'package:tikzy/providers/ticket_provider.dart';
+import 'package:tikzy/providers/user_provider.dart';
 import 'package:tikzy/services/ticket_services.dart';
 import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
@@ -10,7 +11,10 @@ import 'package:tikzy/utils/spaces.dart';
 import 'package:tikzy/widgets/dropdown.dart';
 
 import '../../models/ticket_model.dart';
+import '../../providers/user_list_provider.dart';
+import '../../services/notification_services.dart';
 import '../../utils/status_colors.dart';
+import '../../widgets/custom_scaffold.dart';
 import '../../widgets/thumbnail_view.dart';
 
 class TicketDetailPage extends ConsumerStatefulWidget {
@@ -44,6 +48,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     selectedPriority = widget.ticket.priority;
     selectedDueDate = widget.ticket.dueDate!;
     selectedAssignee = widget.ticket.assignee;
+    assignedName = widget.ticket.assignee;
     updatedAttachments = List<String>.from(widget.ticket.attachments);
     fetchAssignee();
   }
@@ -53,13 +58,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     final user = await UserService().fetchUserNameById(
       widget.ticket.assignedBy,
     );
-    if (user != null) {
-      setState(() {
-        assignedName = user;
-        if (widget.ticket.assignee.isEmpty)
-          selectedAssignee = assignees.isNotEmpty ? assignees.first.name : '';
-      });
-    }
+    setState(() {});
+    if (user != null) {}
   }
 
   void markModified() {
@@ -89,6 +89,22 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       priority: selectedPriority,
       assignee: selectedAssignee,
     );
+    fetchAssignee();
+    if (selectedAssignee.isNotEmpty) {
+      await ref.read(userListProvider.notifier).loadUsers();
+      final userlist = ref.read(userListProvider).value;
+      print(userlist);
+      final filteredUserList = (userlist ?? [])
+          .where((element) => element.role == 'Admin')
+          .toList();
+      for (int i = 0; i < filteredUserList.length; i++) {
+        await NotificationService().sendPushyNotification(
+          title: 'New Ticket Assigned',
+          deviceToken: filteredUserList[i].pushyToken.toString(),
+          message: 'A new ticket has been assigned by admin to you',
+        );
+      }
+    }
     ref.read(ticketNotifierProvider.notifier).loadTickets();
     setState(() => isModified = false);
   }
@@ -105,36 +121,21 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
 
-    return Scaffold(
-      appBar: isMobile
-          ? AppBar(
-              centerTitle: true,
-              title: Text(
-                'Ticket #${widget.ticket.id}',
-                style: TextStyle(fontSize: baseFontSize + 4),
-              ),
-              leading: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-              ),
-            )
-          : null,
-      backgroundColor: Colors.grey.shade100,
+    return CustomScaffold(
+      isScrollable: true,
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 900),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            padding: EdgeInsets.all(commonPaddingSize),
             child: Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(commonRadiusSize),
               ),
               color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.all(28),
+                padding: EdgeInsets.all(commonPaddingSize),
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +156,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 32),
+                      sb(0, 1),
 
                       // Meta and Description
                       isMobile
@@ -166,7 +167,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                   width: double.infinity,
                                   child: buildDescriptionCard(),
                                 ),
-                                sb(0, 2),
+                                sb(0, 1),
                                 buildMetaCard(),
                               ],
                             )
@@ -181,8 +182,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                 ),
                               ],
                             ),
-
-                      const SizedBox(height: 32),
+                      if (isModified) sb(0, 1),
                       if (isModified) buildUpdateButton(),
                     ],
                   ),
@@ -215,6 +215,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Widget buildMetaCard() {
+    final userdata = ref.watch(userLocalProvider);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -231,8 +232,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 children: [
                   metaField('Project', widget.ticket.projectName),
                   if (widget.ticket.assignee.isNotEmpty)
-                    metaField('Assignee', widget.ticket.assignee),
-                  metaField('Assigned By', assignedName),
+                    metaField('Assigned to', assignedName),
+                  metaField('Assigned By', 'Admin'),
                   dateField('Created', widget.ticket.createdDate),
                   if (widget.ticket.closedDate != null)
                     dateField('Closed', widget.ticket.closedDate!),
@@ -252,23 +253,25 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
-                  Text("Change Assignee", style: fieldLabelStyle()),
-                  const SizedBox(height: 6),
-                  CustomDropdown(
-                    width: 200,
-                    options: assignees.map((user) => user.name).toList(),
-                    value: selectedAssignee,
-                    fillColor: getStatusColor(selectedStatus),
-                    fontSize: baseFontSize,
-                    onChanged: (value) {
-                      if (value != null && value != selectedAssignee) {
-                        setState(() {
-                          selectedAssignee = value;
-                          markModified();
-                        });
-                      }
-                    },
-                  ),
+                  if (userdata!.role == 'Admin')
+                    Text("Change Assignee", style: fieldLabelStyle()),
+                  if (userdata!.role == 'Admin') const SizedBox(height: 6),
+                  if (userdata!.role == 'Admin')
+                    CustomDropdown(
+                      width: 200,
+                      options: assignees.map((user) => user.name).toList(),
+                      value: selectedAssignee,
+                      fillColor: getStatusColor(selectedStatus),
+                      fontSize: baseFontSize,
+                      onChanged: (value) {
+                        if (value != null && value != selectedAssignee) {
+                          setState(() {
+                            selectedAssignee = value;
+                            markModified();
+                          });
+                        }
+                      },
+                    ),
                   const SizedBox(height: 12),
                   dateField('Change Due', selectedDueDate, editable: true),
                   const SizedBox(height: 8),

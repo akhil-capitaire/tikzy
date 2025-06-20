@@ -1,7 +1,14 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tikzy/providers/ticket_provider.dart';
+import 'package:tikzy/providers/user_list_provider.dart';
 
+import '../../providers/user_provider.dart';
+import '../../services/notification_services.dart';
 import '../../utils/fontsizes.dart';
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
@@ -26,17 +33,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
-        decoration: BoxDecoration(
-          // gradient: LinearGradient(
-          //   colors: [
-          //     Colors.white,
-          //     AppTheme.lightTheme.primaryColor.withOpacity(0.3),
-          //   ],
-          //   begin: Alignment.topLeft,
-          //   tileMode: TileMode.clamp,
-          //   end: Alignment.bottomRight,
-          // ),
-        ),
+        decoration: BoxDecoration(),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -76,6 +73,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         // User is signed in, navigate to dashboard
+        if (!kIsWeb && Platform.isAndroid) NotificationService().init();
+        ref.read(userListProvider.notifier).loadUsers();
+        ref.read(userLocalProvider.notifier).loadUserFromPrefs();
+        ref.read(ticketNotifierProvider.notifier).loadTickets();
         Navigator.pushReplacementNamed(context, Routes.dashboard);
       } else {
         // User is not signed in, navigate to sign-in page

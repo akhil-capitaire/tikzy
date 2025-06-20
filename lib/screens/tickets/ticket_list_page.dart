@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/providers/ticket_provider.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/utils/screen_size.dart';
 
 import '../../models/ticket_model.dart';
-import '../../utils/screen_size.dart';
+import '../../widgets/custom_scaffold.dart';
 import 'ticket_row.dart'; // Your existing TicketRow widget
 
 class TicketsListPage extends ConsumerStatefulWidget {
@@ -78,41 +79,30 @@ class _TicketsListPageState extends ConsumerState<TicketsListPage> {
         clearFilters();
         ref.read(ticketNotifierProvider.notifier).loadTickets();
       },
-      child: Scaffold(
-        appBar: isMobile
-            ? AppBar(
-                centerTitle: true,
-                title: Text(
-                  'Tickets',
-                  style: TextStyle(fontSize: baseFontSize + 4),
+      child: CustomScaffold(
+        isScrollable: true,
+        body: Container(
+          height: ScreenSize.screenHeight,
+          child: Padding(
+            padding: EdgeInsets.all(commonPaddingSize),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildFilterRow(),
+                const SizedBox(height: 16),
+                if (!isMobile) buildDesktopHeader(),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: filteredTickets.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final ticket = filteredTickets[index];
+                      return TicketRow(ticket: ticket);
+                    },
+                  ),
                 ),
-                leading: IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-                ),
-              )
-            : null,
-        body: Padding(
-          padding: EdgeInsets.all(ScreenSize.width(4)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildFilterRow(),
-              const SizedBox(height: 16),
-              if (!isMobile) buildDesktopHeader(),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: filteredTickets.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, index) {
-                    final ticket = filteredTickets[index];
-                    return TicketRow(ticket: ticket);
-                  },
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -121,8 +111,8 @@ class _TicketsListPageState extends ConsumerState<TicketsListPage> {
 
   Widget buildFilterRow() {
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 5,
+      runSpacing: 10,
 
       children: [
         buildDropdownFilter(

@@ -49,6 +49,7 @@ dependencies:
   path_provider: any
   firebase_messaging: any
   flutter_local_notifications: any
+  pushy_flutter: 2.0.33
 
 dev_dependencies:
   flutter_test:

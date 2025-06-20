@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:tikzy/utils/fontsizes.dart';
+import 'package:tikzy/widgets/custom_scaffold.dart';
 
 import '../../providers/user_provider.dart' show userLocalProvider;
 
@@ -25,24 +26,25 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               final isMobile = constraints.maxWidth < 600;
               final cardWidth = isMobile ? constraints.maxWidth * 0.9 : 500.0;
 
-              return Scaffold(
-                appBar: isMobile
-                    ? AppBar(
-                        centerTitle: true,
-                        title: Text(
-                          'Profile',
-                          style: TextStyle(fontSize: baseFontSize + 4),
-                        ),
-                        leading: IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-                        ),
-                      )
-                    : null,
+              return CustomScaffold(
+                // appBar: isMobile
+                //     ? AppBar(
+                //         centerTitle: true,
+                //         title: Text(
+                //           'Profile',
+                //           style: TextStyle(fontSize: baseFontSize + 4),
+                //         ),
+                //         leading: IconButton(
+                //           onPressed: () {
+                //             Navigator.pop(context);
+                //           },
+                //           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                //         ),
+                //       )
+                //     : null,
                 body: Center(
                   child: Card(
+                    color: Colors.grey.shade50,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(commonRadiusSize),

@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pushy_flutter/pushy_flutter.dart';
 
 import '../../utils/routes.dart';
 import '../../utils/screen_size.dart';
@@ -10,11 +12,15 @@ import 'firebase_options.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  initializeFirebase();
+
+  await initializeFirebase(); // ✅ Properly awaited
+  if (!kIsWeb) await initializePushy(); // ✅ Awaited before runApp
+
   const initializationSettings = InitializationSettings(
-    android: AndroidInitializationSettings('launcher_notification'),
+    android: AndroidInitializationSettings('@mipmap/ic_launcher'),
     iOS: DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -28,7 +34,8 @@ Future<void> main() async {
     onDidReceiveBackgroundNotificationResponse:
         _onBackgroundNotificationResponse,
   );
-  runApp(ProviderScope(child: MyApp()));
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 Future<void> initializeFirebase() async {
@@ -37,23 +44,53 @@ Future<void> initializeFirebase() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    throw Exception('An error occurred while initializing Firebase: $e');
+    debugPrint('Firebase initialization error: $e');
+    rethrow;
   }
 }
 
-void onNotificationResponse(NotificationResponse notificationResponse) {}
+Future<void> initializePushy() async {
+  try {
+    // Start Pushy service and listen for notifications
+    Pushy.listen();
 
-// Handle background notification taps
+    // Register background notification listener
+    Pushy.setNotificationListener(backgroundNotificationListener);
+
+    // Optional: Get the device token
+    final token = await Pushy.appId;
+    debugPrint('Pushy Device Token: $token');
+  } catch (e) {
+    debugPrint('Pushy initialization error: $e');
+    rethrow;
+  }
+}
+
+void onNotificationResponse(NotificationResponse notificationResponse) {
+  // Handle foreground tap
+  final payload = notificationResponse.payload;
+  debugPrint('Notification tapped: $payload');
+}
+
 @pragma('vm:entry-point')
 void _onBackgroundNotificationResponse(
   NotificationResponse notificationResponse,
-) {}
+) {
+  final payload = notificationResponse.payload;
+  debugPrint('Background notification tapped: $payload');
+}
+
+@pragma('vm:entry-point')
+void backgroundNotificationListener(Map<String, dynamic> data) {
+  // Handle background message
+  debugPrint('Background Pushy notification: $data');
+}
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     ScreenSize.init(context);

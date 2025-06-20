@@ -7,6 +7,7 @@ class UserModel {
   final String name;
   final String email;
   final String role;
+  final String? pushyToken;
   final String? avatarUrl;
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
@@ -17,6 +18,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.role,
+    this.pushyToken,
     this.avatarUrl,
     this.createdAt,
     this.updatedAt,
@@ -34,6 +36,7 @@ class UserModel {
       avatarUrl: data['avatarUrl'] as String?,
       createdAt: data['createdAt'] as Timestamp?,
       updatedAt: data['updatedAt'] as Timestamp?,
+      pushyToken: data['pushyToken'] as String?,
       projectAccess:
           (data['projectAccess'] as List<dynamic>?)
               ?.map((e) => ProjectModel.fromJson(Map<String, dynamic>.from(e)))
@@ -50,6 +53,7 @@ class UserModel {
       email: json['email'] as String,
       role: json['role'] as String,
       avatarUrl: json['avatarUrl'] as String?,
+      pushyToken: json['pushyToken'] as String?,
       createdAt: json['createdAt'] != null
           ? Timestamp.fromMillisecondsSinceEpoch(json['createdAt'] as int)
           : null,
@@ -74,6 +78,7 @@ class UserModel {
       'avatarUrl': avatarUrl,
       'createdAt': createdAt?.millisecondsSinceEpoch,
       'updatedAt': updatedAt?.millisecondsSinceEpoch,
+      'pushyToken': pushyToken,
       'projectAccess': projectAccess.map((p) => p.toJson()).toList(),
     };
   }
@@ -87,6 +92,7 @@ class UserModel {
       'avatarUrl': avatarUrl,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'pushyToken': pushyToken,
       'projectAccess': projectAccess.map((p) => p.toJson()).toList(),
     };
   }
@@ -97,6 +103,7 @@ class UserModel {
     String? name,
     String? email,
     String? role,
+    String? pushyToken,
     String? avatarUrl,
     Timestamp? createdAt,
     Timestamp? updatedAt,
@@ -107,6 +114,7 @@ class UserModel {
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,
+      pushyToken: pushyToken ?? this.pushyToken,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

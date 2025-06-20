@@ -15,8 +15,6 @@ class ProjectListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectAsync = ref.watch(projectListProvider);
-    final isMobile = MediaQuery.of(context).size.width < 600;
-
     return CustomScaffold(
       isScrollable: true,
       body: projectAsync.when(
@@ -39,15 +37,15 @@ class ProjectListBody extends StatefulWidget {
 
 class _ProjectListBodyState extends State<ProjectListBody> {
   @override
-  String _search = '';
+  String search = '';
 
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 600;
     final filtered = widget.projects
         .where(
           (u) =>
-              u.name.toLowerCase().contains(_search.toLowerCase()) ||
-              u.name.toLowerCase().contains(_search.toLowerCase()),
+              u.name.toLowerCase().contains(search.toLowerCase()) ||
+              u.name.toLowerCase().contains(search.toLowerCase()),
         )
         .toList();
 

@@ -11,7 +11,7 @@ class UserListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userListProvider);
-    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return CustomScaffold(
       isScrollable: true,
       body: userAsync.when(

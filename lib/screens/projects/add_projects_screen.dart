@@ -37,15 +37,12 @@ class AddProjectPageState extends ConsumerState<AddProjectPage> {
       name: nameController.text.trim(),
       description: descController.text.trim(),
     );
-
-    Navigator.pop(context);
+    if (context.mounted) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isLoading =
-        ref.watch(buttonLoadingProvider)[ButtonType.primary] ?? false;
     final isMobile = MediaQuery.of(context).size.width < 600;
     return CustomScaffold(
       isScrollable: true,

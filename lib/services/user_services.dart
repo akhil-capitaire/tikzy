@@ -48,7 +48,7 @@ class UserService {
   }) async {
     try {
       // 1. Create user in Firebase Auth
-      final credential = await _auth.createUserWithEmailAndPassword(
+      await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );

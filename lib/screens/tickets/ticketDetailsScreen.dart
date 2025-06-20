@@ -9,6 +9,7 @@ import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
 import 'package:tikzy/utils/spaces.dart';
 import 'package:tikzy/widgets/dropdown.dart';
+import 'package:tikzy/widgets/form_input.dart';
 
 import '../../models/ticket_model.dart';
 import '../../providers/user_list_provider.dart';
@@ -31,7 +32,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   late String selectedPriority;
   late DateTime selectedDueDate;
   late List<String> updatedAttachments;
-
+  final descriptionController = TextEditingController();
   bool isModified = false;
 
   final statusOptions = ['Open', 'In Progress', 'Closed', 'On Hold'];
@@ -255,8 +256,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   const SizedBox(height: 8),
                   if (userdata!.role == 'Admin')
                     Text("Change Assignee", style: fieldLabelStyle()),
-                  if (userdata!.role == 'Admin') const SizedBox(height: 6),
-                  if (userdata!.role == 'Admin')
+                  if (userdata.role == 'Admin') const SizedBox(height: 6),
+                  if (userdata.role == 'Admin')
                     CustomDropdown(
                       width: 200,
                       options: assignees.map((user) => user.name).toList(),
@@ -338,6 +339,13 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 color: Colors.grey.shade900,
                 height: 1.4,
               ),
+            ),
+            const SizedBox(height: 12),
+            Text('Comment', style: fieldLabelStyle()),
+            const SizedBox(height: 12),
+            FormDescription(
+              controller: descriptionController,
+              hintText: 'Add a comment',
             ),
             if (updatedAttachments.isNotEmpty) ...[
               const SizedBox(height: 24),

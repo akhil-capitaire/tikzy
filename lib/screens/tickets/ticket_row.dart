@@ -66,7 +66,7 @@ class _TicketRowState extends State<TicketRow> {
                     : '-',
               ),
               cell(widget.ticket.assignee),
-              cell(assignedName),
+              cell('Admin'),
               statusPill(widget.ticket.status),
 
               priorityPill(widget.ticket.priority),

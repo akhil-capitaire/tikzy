@@ -65,13 +65,6 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
   @override
   Widget build(BuildContext context) {
     final baseFontSize = 14.0;
-    final theme = Theme.of(context);
-    final isMobile = MediaQuery.of(context).size.width < 600;
-
-    final inputBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: theme.dividerColor),
-    );
 
     return CustomScaffold(
       isScrollable: true,

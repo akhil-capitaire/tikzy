@@ -363,7 +363,7 @@ class _AddUserPageState extends ConsumerState<AddUserPage> {
                   shrinkWrap: true,
                   itemCount: allProjects!.length,
                   itemBuilder: (_, index) {
-                    final project = allProjects![index];
+                    final project = allProjects[index];
                     final isSelected = temp.any((p) => p.id == project.id);
                     return CheckboxListTile(
                       title: Text(

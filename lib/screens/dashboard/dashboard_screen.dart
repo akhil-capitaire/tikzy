@@ -31,9 +31,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(userLocalProvider);
-    final role = user?.role ?? 'user';
-    final theme = Theme.of(context);
     final isMobile = MediaQuery.of(context).size.width < 600;
     final tickets = ref.watch(ticketNotifierProvider);
     Widget buildTicketList() {
@@ -167,28 +164,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget buildSummaryCards() {
     final items = [
       TicketSummaryCard(
-        label: 'Pending Tickets',
+        label: 'Pending',
         count: ref
             .read(ticketNotifierProvider.notifier)
             .getTicketCountByStatus('open'),
         color: Colors.orange,
       ),
       TicketSummaryCard(
-        label: 'Closed Tickets',
+        label: 'Closed',
         count: ref
             .read(ticketNotifierProvider.notifier)
             .getTicketCountByStatus('closed'),
         color: Colors.green,
       ),
       TicketSummaryCard(
-        label: 'Important Tickets',
+        label: 'Important',
         count: ref
             .read(ticketNotifierProvider.notifier)
             .getImportanrTicketCount(),
         color: Colors.red,
       ),
       TicketSummaryCard(
-        label: 'In Progress Tickets',
+        label: 'In Progress',
         count: ref
             .read(ticketNotifierProvider.notifier)
             .getTicketCountByStatus('in progress'),
@@ -261,7 +258,9 @@ class DashboardSidePanel extends StatelessWidget {
                 label: 'Logout',
                 onTap: () async {
                   await AuthService().signOut();
-                  Navigator.pushReplacementNamed(context, Routes.signin);
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, Routes.signin);
+                  }
                 },
               ),
               if (role == 'Admin') ...[
@@ -325,6 +324,7 @@ class ActionTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const ActionTile({
+    super.key,
     required this.icon,
     required this.label,
     required this.onTap,
@@ -347,7 +347,7 @@ class ActionTile extends StatelessWidget {
 class AdminActionCard extends StatelessWidget {
   final List<Widget> children;
 
-  const AdminActionCard({required this.children});
+  const AdminActionCard({super.key, required this.children});
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tikzy/models/comment_model.dart';
+import 'package:tikzy/models/history_model.dart';
 
 class Ticket {
   final String id;
@@ -8,11 +10,13 @@ class Ticket {
   final String assignee;
   final String assignedBy;
   final String status;
-  final String priority; // Default priority
+  final String priority;
   final DateTime? createdDate;
   final DateTime? dueDate;
   final DateTime? closedDate;
   final List<String> attachments;
+  final List<Comment>? comments;
+  final List<History>? history;
 
   const Ticket({
     required this.id,
@@ -22,11 +26,13 @@ class Ticket {
     required this.assignee,
     required this.assignedBy,
     required this.status,
-    required this.priority, // Default priority
+    required this.priority,
     this.createdDate,
     this.dueDate,
     this.closedDate,
     this.attachments = const [],
+    this.comments,
+    this.history,
   });
   factory Ticket.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -47,6 +53,12 @@ class Ticket {
           ? DateTime.tryParse(data['closedDate'])
           : null,
       attachments: List<String>.from(data['attachments'] ?? []),
+      comments: (data['comments'] != null)
+          ? List<Comment>.from(data['comments'].reversed)
+          : [],
+      history: (data['history'] != null)
+          ? List<History>.from(data['history'].reversed)
+          : [],
     );
   }
 }

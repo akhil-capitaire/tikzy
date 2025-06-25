@@ -7,7 +7,8 @@ import 'package:tikzy/providers/user_provider.dart';
 import 'package:tikzy/services/ticket_services.dart';
 import 'package:tikzy/services/user_services.dart';
 import 'package:tikzy/utils/fontsizes.dart';
-import 'package:tikzy/utils/spaces.dart';
+import 'package:tikzy/utils/screen_size.dart';
+import 'package:tikzy/widgets/buttons.dart';
 import 'package:tikzy/widgets/dropdown.dart';
 import 'package:tikzy/widgets/form_input.dart';
 
@@ -19,20 +20,20 @@ import '../../widgets/custom_scaffold.dart';
 import '../../widgets/thumbnail_view.dart';
 
 class TicketDetailPage extends ConsumerStatefulWidget {
-  final Ticket ticket;
+  Ticket ticket;
 
-  const TicketDetailPage({super.key, required this.ticket});
+  TicketDetailPage({super.key, required this.ticket});
 
   @override
-  ConsumerState<TicketDetailPage> createState() => _TicketDetailPageState();
+  ConsumerState<TicketDetailPage> createState() => TicketDetailPageState();
 }
 
-class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
+class TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   late String selectedStatus;
   late String selectedPriority;
   late DateTime selectedDueDate;
   late List<String> updatedAttachments;
-  final descriptionController = TextEditingController();
+  final commentController = TextEditingController();
   bool isModified = false;
 
   final statusOptions = ['Open', 'In Progress', 'Closed', 'On Hold'];
@@ -42,6 +43,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   final baseFontSize = 14.0;
   final dateFormat = DateFormat('MMM d, y');
   String assignedName = '';
+
   @override
   void initState() {
     super.initState();
@@ -59,8 +61,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     final user = await UserService().fetchUserNameById(
       widget.ticket.assignedBy,
     );
-    setState(() {});
-    if (user != null) {}
+    setState(() {
+      if (user != null) assignedName = user;
+    });
   }
 
   void markModified() {
@@ -83,18 +86,26 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Future<void> updateTicketChanges() async {
+    final userdata = ref.watch(userLocalProvider);
     await TicketService().updateTicket(
+      currentTicket: widget.ticket,
+      updatedBy: userdata!.id,
       ticketId: widget.ticket.id,
-      dueDate: selectedDueDate,
-      status: selectedStatus,
-      priority: selectedPriority,
-      assignee: selectedAssignee,
+      dueDate: widget.ticket.dueDate == selectedDueDate
+          ? null
+          : selectedDueDate,
+      status: widget.ticket.status == selectedStatus ? null : selectedStatus,
+      priority: widget.ticket.priority == selectedPriority
+          ? null
+          : selectedPriority,
+      assignee: widget.ticket.assignee == selectedAssignee
+          ? null
+          : selectedAssignee,
     );
     fetchAssignee();
     if (selectedAssignee.isNotEmpty) {
       await ref.read(userListProvider.notifier).loadUsers();
       final userlist = ref.read(userListProvider).value;
-      print(userlist);
       final filteredUserList = (userlist ?? [])
           .where((element) => element.role == 'Admin')
           .toList();
@@ -106,7 +117,22 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
         );
       }
     }
-    ref.read(ticketNotifierProvider.notifier).loadTickets();
+    await ref.read(ticketNotifierProvider.notifier).loadTickets();
+    final List<Ticket>? ticketlist = ref.read(ticketNotifierProvider).value;
+    final ticket = ticketlist?.firstWhere(
+      (u) => u.id == widget.ticket.id,
+      orElse: () => Ticket(
+        id: '',
+        title: '',
+        description: '',
+        projectName: '',
+        assignee: '',
+        assignedBy: '',
+        status: '',
+        priority: '',
+      ),
+    );
+    widget.ticket = ticket!;
     setState(() => isModified = false);
   }
 
@@ -120,13 +146,13 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
+    final isMobile = screenWidth < 1000;
 
     return CustomScaffold(
       isScrollable: true,
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 900),
+          constraints: const BoxConstraints(maxWidth: 1500),
           child: Padding(
             padding: EdgeInsets.all(commonPaddingSize),
             child: Card(
@@ -149,7 +175,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                             child: Text(
                               widget.ticket.title,
                               style: TextStyle(
-                                fontSize: baseFontSize + 4,
+                                fontSize: baseFontSize + 6,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey.shade900,
                               ),
@@ -157,19 +183,20 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           ),
                         ],
                       ),
-                      sb(0, 1),
+                      const SizedBox(height: 18),
 
                       // Meta and Description
                       isMobile
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: buildDescriptionCard(),
-                                ),
-                                sb(0, 1),
                                 buildMetaCard(),
+                                const SizedBox(height: 18),
+                                buildDescriptionCard(),
+                                const SizedBox(height: 18),
+                                buildComments(),
+                                const SizedBox(height: 18),
+                                buildHistory(),
                               ],
                             )
                           : Row(
@@ -181,9 +208,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                                   flex: 6,
                                   child: buildDescriptionCard(),
                                 ),
+                                const SizedBox(width: 32),
+                                Expanded(flex: 6, child: buildHistory()),
                               ],
                             ),
-                      if (isModified) sb(0, 1),
+
+                      if (isModified) const SizedBox(height: 18),
                       if (isModified) buildUpdateButton(),
                     ],
                   ),
@@ -195,6 +225,191 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       ),
     );
   }
+
+  Widget buildHistory() {
+    final history = widget.ticket.history;
+    if (history == null || history.isEmpty) {
+      return const SizedBox();
+    }
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.grey.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ticket History',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: ScreenSize.height(30),
+              child: ListView.separated(
+                physics: const ScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: history.length,
+                separatorBuilder: (_, __) => const Divider(height: 16),
+                itemBuilder: (context, index) {
+                  final entry = history[index];
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.history,
+                        size: 20,
+                        color: Colors.blueGrey,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              entry.message,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            if (entry.createdDate != null)
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      formatDate(entry.createdDate!),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    'Updated by: ${entry.updatedByName}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildComments() {
+    final comments = widget.ticket.comments;
+    final userlist = ref.watch(userListProvider).value;
+    if (comments == null || comments.isEmpty) {
+      return const SizedBox();
+    }
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.grey.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Comments',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: ScreenSize.height(25),
+              child: ListView.separated(
+                physics: const ScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: comments.length,
+                separatorBuilder: (_, __) => const Divider(height: 16),
+                itemBuilder: (context, index) {
+                  final comment = comments[index];
+                  final user = userlist?.firstWhere(
+                    (u) => u.id == comment.author,
+                    orElse: () => UserModel(
+                      id: comment.author,
+                      name: 'Unknown',
+                      email: '',
+                      role: '',
+                    ),
+                  );
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        child: Text(
+                          _getInitials(user!.name),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              comment.comment,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            if (comment.createdDate != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  formatDate(comment.createdDate!),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return parts.take(2).map((p) => p[0].toUpperCase()).join();
+  }
+
+  String formatDate(DateTime date) {
+    return '${date.year}-${_twoDigits(date.month)}-${_twoDigits(date.day)} ${_twoDigits(date.hour % 12 == 0 ? 12 : date.hour % 12)}:${_twoDigits(date.minute)} ${date.hour >= 12 ? 'PM' : 'AM'}';
+  }
+
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
   Widget buildUpdateButton() {
     return Align(
@@ -245,9 +460,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 ],
               ),
             ),
-
             const SizedBox(width: 16),
-
             // RIGHT: Editable Fields
             Expanded(
               child: Column(
@@ -261,9 +474,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                     CustomDropdown(
                       width: 200,
                       options: assignees.map((user) => user.name).toList(),
-                      value: selectedAssignee,
+                      value: (selectedAssignee.isEmpty)
+                          ? null
+                          : selectedAssignee,
                       fillColor: getStatusColor(selectedStatus),
                       fontSize: baseFontSize,
+                      // hint: const Text('select', style: TextStyle(color: Colors.grey)),
                       onChanged: (value) {
                         if (value != null && value != selectedAssignee) {
                           setState(() {
@@ -281,9 +497,10 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   CustomDropdown(
                     width: 200,
                     options: statusOptions,
-                    value: selectedStatus,
+                    value: (selectedStatus.isEmpty) ? null : selectedStatus,
                     fillColor: getStatusColor(selectedStatus),
                     fontSize: baseFontSize,
+                    // hint: const Text('select', style: TextStyle(color: Colors.grey)),
                     onChanged: (value) {
                       if (value != null && value != selectedStatus) {
                         setState(() {
@@ -299,9 +516,10 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   CustomDropdown(
                     width: 200,
                     options: priorityOptions,
-                    value: selectedPriority,
+                    value: (selectedPriority.isEmpty) ? null : selectedPriority,
                     fillColor: getPriorityColor(selectedPriority),
                     fontSize: baseFontSize,
+                    // hint: const Text('select', style: TextStyle(color: Colors.grey)),
                     onChanged: (value) {
                       if (value != null && value != selectedPriority) {
                         setState(() {
@@ -321,6 +539,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Widget buildDescriptionCard() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 1000;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -340,13 +560,25 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
             Text('Comment', style: fieldLabelStyle()),
             const SizedBox(height: 12),
             FormDescription(
-              controller: descriptionController,
+              controller: commentController,
               hintText: 'Add a comment',
+              onChanged: (value) {
+                setState(() {});
+              },
             ),
+            const SizedBox(height: 12),
+            if (commentController.text.isNotEmpty)
+              CustomButton(
+                label: 'Save',
+                onPressed: saveComment,
+                isSmall: false,
+                type: ButtonType.outlined,
+              ),
+            if (!isMobile) ...[const SizedBox(height: 18), buildComments()],
             if (updatedAttachments.isNotEmpty) ...[
               const SizedBox(height: 24),
               Text('Attachments', style: fieldLabelStyle()),
@@ -357,7 +589,6 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 children: updatedAttachments.map((url) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-
                     child: ImageThumbnail(
                       imageUrl: url,
                       tag: 'sample-image-tag',
@@ -436,5 +667,34 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       fontWeight: FontWeight.w600,
       color: Colors.grey.shade600,
     );
+  }
+
+  Future<void> saveComment() async {
+    final userdata = ref.watch(userLocalProvider);
+    await TicketService().createComment(
+      ticketId: widget.ticket.id,
+      commentText: commentController.text,
+      userId: userdata!.id,
+      authorName: userdata.name,
+    );
+    await ref.read(ticketNotifierProvider.notifier).loadTickets();
+    final List<Ticket>? ticketlist = ref.read(ticketNotifierProvider).value;
+    final ticket = ticketlist?.firstWhere(
+      (u) => u.id == widget.ticket.id,
+      orElse: () => Ticket(
+        id: '',
+        title: '',
+        description: '',
+        projectName: '',
+        assignee: '',
+        assignedBy: '',
+        status: '',
+        priority: '',
+      ),
+    );
+    widget.ticket = ticket!;
+    setState(() {
+      commentController.clear();
+    });
   }
 }

@@ -94,6 +94,7 @@ class TicketNotifier extends StateNotifier<AsyncValue<List<Ticket>>> {
   }) async {
     try {
       await _service.updateTicket(
+        updatedBy: assignedBy ?? '',
         ticketId: ticketId,
         title: title,
         description: description,

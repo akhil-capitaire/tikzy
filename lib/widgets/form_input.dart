@@ -82,6 +82,7 @@ class FormDescription extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final TextInputType? keyboardType;
   final bool? obscureText;
+  final void Function(String)? onChanged;
 
   const FormDescription({
     super.key,
@@ -90,13 +91,14 @@ class FormDescription extends StatefulWidget {
     this.hintText,
     this.keyboardType,
     this.obscureText,
+    this.onChanged,
   });
 
   @override
-  State<FormDescription> createState() => _FormDescriptionState();
+  State<FormDescription> createState() => FormDescriptionState();
 }
 
-class _FormDescriptionState extends State<FormDescription> {
+class FormDescriptionState extends State<FormDescription> {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 600;
@@ -109,21 +111,19 @@ class _FormDescriptionState extends State<FormDescription> {
         validator: widget.validator,
         keyboardType: widget.keyboardType,
         obscureText: widget.obscureText ?? false,
+        onChanged: widget.onChanged,
         minLines: 8,
         maxLines: 12,
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
         decoration: InputDecoration(
-          hintStyle: TextStyle(
-            fontSize: baseFontSize,
-            fontWeight: FontWeight.w400,
-          ),
-          labelStyle: TextStyle(
-            fontSize: baseFontSize,
+          hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+          labelStyle: const TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
           labelText: widget.hintText,
           alignLabelWithHint: true,
-          errorStyle: TextStyle(fontSize: 14),
+          errorStyle: const TextStyle(fontSize: 14),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 12,

@@ -177,6 +177,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     if (picked != null && picked != selectedDueDate) {
       setState(() {
         selectedDueDate = picked;
+        // LoaderHelper.hideLoader();
         showUpdateConfirmation("Due Date");
       });
     }
@@ -252,6 +253,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                           value != null && value != selectedAssignee
                           ? setState(() {
                               selectedAssignee = value;
+                              // LoaderHelper.hideLoader();
                               showUpdateConfirmation("Assignee");
                             })
                           : null,
@@ -268,6 +270,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                     (value) => value != null && value != selectedStatus
                         ? setState(() {
                             selectedStatus = value;
+                            // LoaderHelper.hideLoader();
                             showUpdateConfirmation("Status");
                           })
                         : null,
@@ -281,6 +284,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                     (value) => value != null && value != selectedPriority
                         ? setState(() {
                             selectedPriority = value;
+                            // LoaderHelper.hideLoader();
                             showUpdateConfirmation("Priority");
                           })
                         : null,

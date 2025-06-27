@@ -3,7 +3,6 @@ import 'package:toastification/toastification.dart';
 
 import '../main.dart';
 import '../utils/fontsizes.dart';
-import 'loader.dart';
 
 class SnackbarHelper {
   static void showSnackbar(
@@ -37,7 +36,7 @@ class SnackbarHelper {
         ),
         borderRadius: BorderRadius.circular(commonRadiusSize),
       );
-      LoaderHelper.hideLoader();
+      // LoaderHelper.hideLoader();
     } else {}
   }
 }

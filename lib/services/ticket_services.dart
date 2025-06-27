@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:tikzy/services/notification_services.dart';
 import 'package:tikzy/services/user_services.dart';
 
 import '../models/comment_model.dart';
@@ -75,10 +76,10 @@ class TicketService {
               status != null ||
               priority != null ||
               assignee != null)
-          ? '${dueDate != null ? ' dueDate changed from ${currentTicket?.dueDate} to ${dueDate},' : ''}'
-                '${status != null ? ' status,changed from ${currentTicket?.status} to $status,' : ''}'
-                '${priority != null ? ' priority changed from ${currentTicket?.priority} to $priority,' : ''}'
-                '${assignee != null ? ' assignee changed from ${currentTicket?.assignee} to $assignee,' : ''}'
+          ? '${dueDate != null ? ' Due date changed from ${currentTicket?.dueDate?.toLocal().toString().split(' ')[0]} to ${dueDate.toLocal().toString().split(' ')[0]},' : ''}'
+                '${status != null ? 'Status changed from ${currentTicket?.status} to $status,' : ''}'
+                '${priority != null ? 'Priority changed from ${currentTicket?.priority} to $priority,' : ''}'
+                '${assignee != null ? 'Assignee changed from ${currentTicket?.assignee} to $assignee,' : ''}'
           : 'updated by $userName ',
       'updatedBy': updatedBy,
       'updatedByName': userName,
@@ -97,7 +98,21 @@ class TicketService {
       'updatedAt': FieldValue.serverTimestamp(),
       'history': FieldValue.arrayUnion([history]),
     };
-
+    final userlist = await UserService().fetchUsers();
+    final filteredUserList = (userlist ?? [])
+        .where(
+          (element) =>
+              element.id == currentTicket!.assignee || element.role == 'Admin',
+        )
+        .toList();
+    for (int i = 0; i < filteredUserList.length; i++) {
+      await NotificationService().sendPushyNotification(
+        title: '${currentTicket!.id} Ticket is Updated',
+        deviceToken: filteredUserList[i].pushyToken.toString(),
+        message:
+            'The ticket "${currentTicket.title}" has been updated by $userName.',
+      );
+    }
     await firestore
         .collection(ticketsCollection)
         .doc(ticketId)

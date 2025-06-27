@@ -320,11 +320,9 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
       );
       await ref.read(userListProvider.notifier).loadUsers();
       final userlist = ref.read(userListProvider).value;
-      print(userlist);
       final filteredUserList = (userlist ?? [])
           .where((element) => element.role == 'Admin')
           .toList();
-      print(filteredUserList.length);
       for (int i = 0; i < filteredUserList.length; i++) {
         await NotificationService().sendPushyNotification(
           title: 'New Ticket Created',

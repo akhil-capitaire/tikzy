@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tikzy/widgets/loader.dart';
 
 import '../utils/fontsizes.dart';
 import '../utils/theme.dart';
@@ -105,8 +106,11 @@ class CustomButton extends ConsumerWidget {
                     .read(buttonLoadingProvider.notifier)
                     .update((state) => {...state, type: true});
                 try {
+                  LoaderHelper.showLoader();
                   await onPressed();
+                  LoaderHelper.hideLoader();
                 } finally {
+                  LoaderHelper.hideLoader();
                   ref
                       .read(buttonLoadingProvider.notifier)
                       .update((state) => {...state, type: false});

@@ -19,10 +19,10 @@ class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
@@ -214,8 +214,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 }
-
-// e.g., baseFontSize, sb()
 
 class DashboardSidePanel extends StatelessWidget {
   final String role;

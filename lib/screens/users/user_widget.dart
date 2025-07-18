@@ -130,110 +130,112 @@ class UserTableRow extends ConsumerWidget {
       child: InkWell(
         onTap: () {},
         hoverColor: Colors.grey.shade100,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 18,
-                      backgroundImage: user.avatarUrl != null
-                          ? NetworkImage(user.avatarUrl!)
-                          : null,
-                      child: user.avatarUrl == null
-                          ? Text(
-                              user.name.isNotEmpty
-                                  ? user.name[0].toUpperCase()
-                                  : '?',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: baseFontSize,
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      user.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: baseFontSize,
+        child: Container(
+          color: Colors.white70,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundImage: user.avatarUrl != null
+                            ? NetworkImage(user.avatarUrl!)
+                            : null,
+                        child: user.avatarUrl == null
+                            ? Text(
+                                user.name.isNotEmpty
+                                    ? user.name[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: baseFontSize,
+                                ),
+                              )
+                            : null,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  user.email,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: baseFontSize,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: SizedBox(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      user.role,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: baseFontSize,
-                        color: Colors.blue.shade700,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Delete User'),
-                        content: Text(
-                          'Are you sure you want to delete this user?',
-                          style: TextStyle(fontSize: baseFontSize + 1),
+                      const SizedBox(width: 10),
+                      Text(
+                        user.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: baseFontSize,
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              UserService().deleteUser(user.id);
-                              ref.read(userListProvider.notifier).loadUsers();
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.delete),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    user.email,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: baseFontSize,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        user.role,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: baseFontSize,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete User'),
+                          content: Text(
+                            'Are you sure you want to delete this user?',
+                            style: TextStyle(fontSize: baseFontSize + 1),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                UserService().deleteUser(user.id);
+                                ref.read(userListProvider.notifier).loadUsers();
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.delete),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

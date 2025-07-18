@@ -18,71 +18,74 @@ class ProjectTableRow extends ConsumerWidget {
       onTap: () {
         // TODO: navigate to project detail/edit page
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Text(
-                project.name,
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: baseFontSize,
+      child: Container(
+        color: Colors.white70,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Text(
+                  project.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: baseFontSize,
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Text(
-                project.description,
-                style: TextStyle(fontSize: baseFontSize),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  project.description,
+                  style: TextStyle(fontSize: baseFontSize),
+                ),
               ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Text(
-                project.createdAt.toLocal().toString().split(' ')[0],
-                style: TextStyle(fontSize: baseFontSize),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  project.createdAt.toLocal().toString().split(' ')[0],
+                  style: TextStyle(fontSize: baseFontSize),
+                ),
               ),
-            ),
-            Expanded(
-              child: IconButton(
-                onPressed: () async {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Delete Project'),
-                      content: Text(
-                        'Are you sure you want to delete this project?',
-                        style: TextStyle(fontSize: baseFontSize),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+              Expanded(
+                child: IconButton(
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delete Project'),
+                        content: Text(
+                          'Are you sure you want to delete this project?',
+                          style: TextStyle(fontSize: baseFontSize),
                         ),
-                        TextButton(
-                          onPressed: () async {
-                            await ProjectService().deleteProject(project.id);
-                            ref
-                                .read(projectListProvider.notifier)
-                                .loadProjects();
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(color: Colors.red),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.delete),
+                          TextButton(
+                            onPressed: () async {
+                              await ProjectService().deleteProject(project.id);
+                              ref
+                                  .read(projectListProvider.notifier)
+                                  .loadProjects();
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.delete),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

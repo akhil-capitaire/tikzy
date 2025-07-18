@@ -7,6 +7,8 @@ import 'package:tikzy/utils/fontsizes.dart';
 import 'package:tikzy/utils/screen_size.dart';
 
 import '../../models/project_model.dart';
+import '../../utils/routes.dart';
+import '../../widgets/buttons.dart';
 import '../../widgets/custom_scaffold.dart';
 
 class ProjectListPage extends ConsumerWidget {
@@ -15,8 +17,24 @@ class ProjectListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectAsync = ref.watch(projectListProvider);
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return CustomScaffold(
       isScrollable: true,
+      appBarButton: isMobile
+          ? IconButton(
+              onPressed: () {
+                Navigator.pushNamed(context, Routes.createproject);
+              },
+              icon: Icon(Icons.add),
+            )
+          : CustomButton(
+              label: 'Add Project',
+              onPressed: () async {
+                Navigator.pushNamed(context, Routes.createproject);
+              },
+              type: ButtonType.primary,
+              isSmall: true,
+            ),
       body: projectAsync.when(
         data: (projects) => ProjectListBody(projects: projects),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -123,11 +141,22 @@ class ProjectTableHeader extends StatelessWidget {
           Expanded(
             flex: 1,
             child: Text(
-              '',
+              ' Blank Text ',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: baseFontSize + 2,
-                color: Colors.black87,
+                color: Colors.transparent, // Placeholder for alignment
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              ' Blank Text ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: baseFontSize + 2,
+                color: Colors.transparent, // Placeholder for alignment
               ),
             ),
           ),

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tikzy/providers/ticket_provider.dart';
 import 'package:tikzy/utils/fontsizes.dart';
 import 'package:tikzy/utils/screen_size.dart';
+import 'package:tikzy/widgets/buttons.dart';
 
 import '../../models/ticket_model.dart';
+import '../../utils/routes.dart';
 import '../../widgets/custom_scaffold.dart';
 import 'ticket_row.dart'; // Your existing TicketRow widget
 
@@ -105,6 +107,21 @@ class _TicketsListPageState extends ConsumerState<TicketsListPage> {
             ),
           ),
         ),
+        appBarButton: isMobile
+            ? IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, Routes.createticket);
+                },
+                icon: Icon(Icons.add),
+              )
+            : CustomButton(
+                label: 'Add Ticket',
+                onPressed: () async {
+                  Navigator.pushNamed(context, Routes.createticket);
+                },
+                type: ButtonType.primary,
+                isSmall: true,
+              ),
       ),
     );
   }
@@ -278,6 +295,15 @@ class _TicketsListPageState extends ConsumerState<TicketsListPage> {
           Expanded(
             child: Text(
               'Status',
+              style: TextStyle(
+                fontSize: baseFontSize + 2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              'Priority',
               style: TextStyle(
                 fontSize: baseFontSize + 2,
                 fontWeight: FontWeight.w600,

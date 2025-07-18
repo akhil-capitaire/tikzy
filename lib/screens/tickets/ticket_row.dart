@@ -47,7 +47,7 @@ class _TicketRowState extends State<TicketRow> {
         child: Container(
           padding: EdgeInsets.all(commonPaddingSize),
           decoration: const BoxDecoration(
-            color: Colors.transparent,
+            color: Colors.white70,
             border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0))),
           ),
           child: Row(
@@ -275,7 +275,7 @@ class _TicketRowState extends State<TicketRow> {
       flex: flex,
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14),
+        style: const TextStyle(fontSize: 14, color: Colors.black),
         overflow: TextOverflow.ellipsis,
       ),
     );
